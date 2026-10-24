@@ -1,0 +1,158 @@
+---
+// src/components/LiveClock.astro
+// Gemini-Inspired Luxury Live Chronometer Showcase Card
+---
+
+<div class="w-full pt-2 pb-1 px-3 sm:px-6">
+  <div class="relative group max-w-5xl mx-auto">
+    <!-- Gemini Cosmic Ambient Liquid Glow (Cyan, Indigo, Purple, Pink, Amber) -->
+    <div
+      class="absolute -inset-1 rounded-2xl bg-gradient-to-r from-blue-500/25 via-purple-500/25 via-pink-500/25 to-amber-500/25 blur-lg opacity-75 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+      aria-hidden="true"
+    ></div>
+
+    <!-- Radiant Multi-Color Gradient Border Container -->
+    <div
+      class="relative p-[1.5px] sm:p-[2px] rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 via-purple-600 via-pink-500 to-amber-500 shadow-md shadow-purple-500/10 dark:shadow-purple-950/30 overflow-hidden"
+    >
+      <!-- Subtle Scanning Light Beam across border -->
+      <div
+        class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none"
+      ></div>
+
+      <!-- Inner Glassmorphic Card Surface -->
+      <div
+        class="relative rounded-[14px] bg-paper-surface/95 dark:bg-night-surface/95 backdrop-blur-2xl px-3 py-2 sm:px-5 sm:py-2.5 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 text-paper-text dark:text-night-text"
+      >
+        <!-- Left: Gemini Live Badge + Prominent Clear English Date -->
+        <div class="flex items-center justify-between sm:justify-start gap-2.5 sm:gap-3.5 w-full sm:w-auto">
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-500/15 via-purple-500/15 to-pink-500/15 text-indigo-700 dark:text-purple-300 border border-purple-500/30 dark:border-purple-400/40 shadow-2xs shrink-0">
+            <span class="animate-pulse text-xs sm:text-sm leading-none">✨</span>
+            <span class="tracking-wider uppercase text-[10px] font-mono font-bold">GEMINI LIVE</span>
+          </div>
+
+          <div class="flex items-center gap-1.5 text-left">
+            <span class="text-xs text-purple-600 dark:text-purple-400 select-none">🗓️</span>
+            <span
+              id="gemini-live-date"
+              class="text-xs sm:text-sm md:text-base font-bold font-sans tracking-tight text-paper-text dark:text-night-text whitespace-nowrap"
+            >
+              Saturday, 10 October 2026
+            </span>
+          </div>
+        </div>
+
+        <!-- Right: Prominent Digital Chronometer with Ticking Neon Seconds -->
+        <div class="flex items-center justify-center w-full sm:w-auto">
+          <div
+            class="inline-flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-1 rounded-xl bg-paper-bg/95 dark:bg-night-bg/95 border border-purple-500/30 dark:border-purple-400/30 shadow-inner font-mono tabular-nums select-none"
+            title="লাইভ ঘড়ি ও সেকেন্ড"
+          >
+            <!-- Hours -->
+            <span
+              id="gemini-clock-hours"
+              class="text-base sm:text-xl md:text-2xl font-black text-paper-text dark:text-night-text tracking-tight"
+            >
+              --
+            </span>
+            <!-- Pulsating Colon -->
+            <span class="text-purple-500 dark:text-purple-400 text-base sm:text-xl md:text-2xl font-bold animate-pulse leading-none">
+              :
+            </span>
+            <!-- Minutes -->
+            <span
+              id="gemini-clock-minutes"
+              class="text-base sm:text-xl md:text-2xl font-black text-paper-text dark:text-night-text tracking-tight"
+            >
+              --
+            </span>
+            <!-- Pulsating Colon -->
+            <span class="text-purple-500 dark:text-purple-400 text-base sm:text-xl md:text-2xl font-bold animate-pulse leading-none">
+              :
+            </span>
+            <!-- Glowing Seconds -->
+            <span
+              id="gemini-clock-seconds"
+              class="text-base sm:text-xl md:text-2xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-amber-600 dark:from-purple-400 dark:via-pink-400 dark:to-amber-400 bg-clip-text text-transparent tracking-tight"
+            >
+              --
+            </span>
+            <!-- Period Badge (AM/PM) -->
+            <span
+              id="gemini-clock-period"
+              class="ml-1 sm:ml-1.5 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold font-sans uppercase bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30"
+            >
+              --
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  (() => {
+    const EN_MONTHS = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    const EN_DAYS = [
+      'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
+    ];
+
+    const dateEl = document.getElementById('gemini-live-date');
+    const hoursEl = document.getElementById('gemini-clock-hours');
+    const minutesEl = document.getElementById('gemini-clock-minutes');
+    const secondsEl = document.getElementById('gemini-clock-seconds');
+    const periodEl = document.getElementById('gemini-clock-period');
+
+    function padZero(num) {
+      return num < 10 ? '0' + num : num.toString();
+    }
+
+    function updateGeminiClock() {
+      const now = new Date();
+
+      // 1. Crystal-clear English Date
+      const dayName = EN_DAYS[now.getDay()];
+      const dateNum = now.getDate();
+      const monthName = EN_MONTHS[now.getMonth()];
+      const year = now.getFullYear();
+      const formattedDate = `${dayName}, ${dateNum} ${monthName} ${year}`;
+
+      if (dateEl && dateEl.textContent !== formattedDate) {
+        dateEl.textContent = formattedDate;
+      }
+
+      // 2. High-precision 12-hour Chronometer
+      let hours = now.getHours();
+      const minutes = now.getMinutes();
+      const seconds = now.getSeconds();
+      const period = hours >= 12 ? 'PM' : 'AM';
+
+      const hours12 = hours % 12 || 12;
+      const hStr = padZero(hours12);
+      const mStr = padZero(minutes);
+      const sStr = padZero(seconds);
+
+      if (hoursEl) hoursEl.textContent = hStr;
+      if (minutesEl) minutesEl.textContent = mStr;
+      if (secondsEl) secondsEl.textContent = sStr;
+      if (periodEl) periodEl.textContent = period;
+    }
+
+    // Run immediately so numbers appear without blank delay
+    updateGeminiClock();
+
+    // Start 1-second interval
+    setInterval(updateGeminiClock, 1000);
+
+    // Update immediately when tab/app becomes visible
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        updateGeminiClock();
+      }
+    });
+  })();
+</script>

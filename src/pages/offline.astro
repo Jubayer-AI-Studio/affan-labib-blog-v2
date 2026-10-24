@@ -1,76 +1,107 @@
 ---
 // src/pages/offline.astro
-import Layout from '../layouts/Layout.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<Layout
-  title="অফলাইন মোড | আফফান লাবীব"
-  description="আপনি বর্তমানে অফলাইনে আছেন। পূর্বে পঠিত লেখাগুলো পড়তে পারবেন।"
+<BaseLayout
+  title="অফলাইন মোড | লাবীবের খেরোখাতা"
+  description="আপনি বর্তমানে অফলাইনে আছেন। পূর্বে পড়া লেখাগুলো ইন্টারনেট ছাড়াই পড়তে পারবেন।"
 >
-  <div class="max-w-xl mx-auto py-12 px-4 space-y-8">
-    <div class="text-center space-y-4">
-      <div class="w-16 h-16 mx-auto rounded-3xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center text-3xl shadow-sm">
-        📶
-      </div>
-      <div class="space-y-2">
-        <h1 class="text-2xl font-bold font-serif text-paper-text dark:text-night-text">
-          আপনি অফলাইনে রয়েছেন
-        </h1>
-        <p class="text-sm font-serif text-paper-muted dark:text-night-muted leading-relaxed">
-          ইন্টারনেট সংযোগ সাময়িকভাবে বিচ্ছিন্ন থাকলেও আপনি পূর্বে ক্যাশকৃত সকল রচনা ও পাঠাগার সাবলীলভাবে পড়তে পারবেন।
-        </p>
-      </div>
-      <div class="flex items-center justify-center gap-3 pt-2">
-        <a
-          href="/"
-          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-paper-accent text-white font-sans text-xs font-semibold shadow-md hover:opacity-95 cursor-pointer"
-        >
-          <span>🏠</span>
-          <span>প্রধান পাতায় যান</span>
-        </a>
-        <button
-          onclick="window.location.reload()"
-          type="button"
-          class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-paper-border dark:border-night-border hover:bg-paper-border/30 text-paper-text dark:text-night-text font-sans text-xs font-medium cursor-pointer"
-        >
-          <span>🔄</span>
-          <span>সংযোগ পরীক্ষা করুন</span>
-        </button>
-      </div>
+  <div class="max-w-xl mx-auto py-12 text-center">
+    <!-- Traditional offline / reading emblem -->
+    <div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-paper-accent/10 dark:bg-night-accent/10 text-paper-accent dark:text-night-accent flex items-center justify-center border border-paper-accent/20 dark:border-night-accent/20">
+      <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+      </svg>
     </div>
 
-    <!-- Dynamic Offline Posts List Container -->
-    <div id="offline-available-section" class="hidden rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/90 dark:bg-night-surface/90 p-5 space-y-3">
-      <h3 class="text-xs font-bold font-sans uppercase tracking-wider text-paper-accent dark:text-night-accent flex items-center gap-2">
-        <span>📖</span>
-        <span>ডিভাইসে সংরক্ষিত অফলাইন রচনাসমূহ:</span>
-      </h3>
-      <div id="offline-posts-list" class="space-y-2 font-serif text-sm"></div>
+    <h1 class="text-2xl sm:text-3xl font-bold font-serif text-paper-text dark:text-night-text mb-3">
+      আপনি বর্তমানে অফলাইনে আছেন
+    </h1>
+
+    <p class="text-paper-muted dark:text-night-muted font-serif text-base leading-relaxed mb-8 max-w-md mx-auto">
+      ইন্টারনেট সংযোগ আপাতত বিচ্ছিন্ন রয়েছে। তবে চিন্তা নেই—আপনার পূর্বে পড়া লেখাগুলো মেমোরিতে জমা আছে এবং আপনি সেগুলো শান্তভাবে পড়তে পারেন।
+    </p>
+
+    <!-- Actions -->
+    <div class="flex flex-wrap items-center justify-center gap-3 mb-10">
+      <button
+        onclick="window.location.reload()"
+        class="inline-flex items-center px-4 py-2 text-sm font-sans font-medium rounded-md bg-paper-accent text-white hover:bg-paper-accent/90 transition-colors shadow-sm"
+      >
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        পুনরায় সংযোগ পরীক্ষা করুন
+      </button>
+
+      <a
+        href="/"
+        class="inline-flex items-center px-4 py-2 text-sm font-sans font-medium rounded-md border border-paper-border dark:border-night-border text-paper-text dark:text-night-text hover:bg-paper-border/30 dark:hover:bg-night-border/30 transition-colors"
+      >
+        মূল পাতায় ফিরুন
+      </a>
+    </div>
+
+    <!-- Cached Articles list container (populated via client JS) -->
+    <div id="cached-articles-section" class="text-left hidden border-t border-paper-border/70 dark:border-night-border/70 pt-6">
+      <h2 class="text-base font-bold font-serif text-paper-text dark:text-night-text mb-3 flex items-center gap-2">
+        <span>📖</span> পূর্বে খোলা লেখাগুলো (অফলাইনে পড়া যাবে):
+      </h2>
+      <ul id="cached-articles-list" class="space-y-2 text-sm font-serif"></ul>
     </div>
   </div>
+</BaseLayout>
 
-  <script is:inline>
-    (() => {
-      // Auto-reload as soon as internet is back
-      window.addEventListener('online', () => {
-        window.location.reload();
-      });
+<script is:inline>
+  // Discover and display cached articles from CacheStorage
+  async function showOfflineArticles() {
+    if (!('caches' in window)) return;
+    try {
+      const cacheNames = await caches.keys();
+      const articleList = document.getElementById('cached-articles-list');
+      const section = document.getElementById('cached-articles-section');
+      if (!articleList || !section) return;
 
-      // Render any locally cached custom posts
-      try {
-        const custom = JSON.parse(localStorage.getItem('kherokhata_custom_posts') || '[]');
-        const listEl = document.getElementById('offline-posts-list');
-        const sectionEl = document.getElementById('offline-available-section');
-        if (custom.length > 0 && listEl && sectionEl) {
-          sectionEl.classList.remove('hidden');
-          listEl.innerHTML = custom.map((p) => `
-            <a href="/${p.slug}" class="block p-3 rounded-xl border border-paper-border/50 dark:border-night-border/50 hover:bg-paper-border/20 transition-colors">
-              <div class="font-bold text-paper-text dark:text-night-text">${p.title}</div>
-              <div class="text-xs text-paper-muted dark:text-night-muted font-sans mt-0.5">${p.formattedDate || p.publishedAt || ''}</div>
-            </a>
-          `).join('');
+      const foundUrls = new Set();
+
+      for (const name of cacheNames) {
+        const cache = await caches.open(name);
+        const requests = await cache.keys();
+        for (const req of requests) {
+          const url = new URL(req.url);
+          // Only show local html paths that are articles (not admin, assets, etc.)
+          if (
+            url.origin === window.location.origin &&
+            url.pathname !== '/' &&
+            url.pathname !== '/offline' &&
+            !url.pathname.startsWith('/admin') &&
+            !url.pathname.startsWith('/_astro') &&
+            !url.pathname.includes('.')
+          ) {
+            foundUrls.add(url.pathname);
+          }
         }
-      } catch (e) {}
-    })();
-  </script>
-</Layout>
+      }
+
+      if (foundUrls.size > 0) {
+        articleList.innerHTML = '';
+        foundUrls.forEach((path) => {
+          const li = document.createElement('li');
+          const cleanName = decodeURIComponent(path.replace(/^\//, '').replace(/-/g, ' '));
+          li.innerHTML = `
+            <a href="${path}" class="block p-3 rounded-md border border-paper-border/60 dark:border-night-border/60 bg-paper-card dark:bg-night-card hover:border-paper-accent/50 dark:hover:border-night-accent/50 transition-colors">
+              <span class="text-paper-accent dark:text-night-accent font-medium">📄 ${cleanName}</span>
+            </a>
+          `;
+          articleList.appendChild(li);
+        });
+        section.classList.remove('hidden');
+      }
+    } catch (e) {
+      console.error('Error listing cached articles', e);
+    }
+  }
+
+  showOfflineArticles();
+</script>

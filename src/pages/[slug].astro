@@ -1,450 +1,271 @@
 ---
 // src/pages/[slug].astro
-import Layout from '../layouts/Layout.astro';
-import ThemeAvatar from '../components/ThemeAvatar.astro';
-import { getAllPostsAsync } from '../lib/db';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import BookInfoCard from '../components/BookInfoCard.astro';
+import { getCollection, type CollectionEntry } from 'astro:content';
+import { formatBengaliDate, calculateReadingTime, CATEGORY_MAP } from '../utils/helpers';
+import author from '../data/author.json';
 
-export const prerender = false;
-
-// Global Edge CDN cache with background revalidation (delivers article in 30ms, revalidates instantly)
-Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800');
-
-const { slug } = Astro.params;
-const allPosts = await getAllPostsAsync();
-const post = allPosts.find((p) => p.slug === slug);
-const isFallback = !post;
-
-const displayPost = post || {
-  slug: slug || '',
-  title: 'লেখা লোড হচ্ছে...',
-  category: 'chinta',
-  description: 'লেখা লোড হচ্ছে...',
-  publishedAt: '',
-  formattedDate: '',
-  tags: [],
-  body: '',
-  wordCount: 0,
-  footnotes: []
-};
-
-const categoryLabels: Record<string, string> = {
-  chinta: 'চিন্তা',
-  pathalap: 'পাঠালাপ',
-  itihas: 'ইতিহাস',
-  'boi-alochona': 'বই-আলোচনা',
-  onubad: 'অনুবাদ'
-};
-
-const categoryName = categoryLabels[displayPost.category] || displayPost.category;
-const readTime = Math.max(1, Math.ceil((displayPost.wordCount || 200) / 100));
-const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
-const readTimeBn = readTime.toString().replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);
-
-const bnToEnMap: Record<string, string> = {
-  '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4',
-  '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9'
-};
-
-function normalizeDigitId(raw: string): string {
-  return (raw || '').replace(/[০-৯]/g, (d) => bnToEnMap[d] || d);
+export async function getStaticPaths() {
+  const posts = await getCollection('posts');
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
 }
 
-// Format body paragraphs (handles markdown headers, bolding, paragraphs, footnotes)
-function renderBody(body: string) {
-  if (!body) return '<div class="py-12 text-center text-paper-muted animate-pulse">লেখা প্রস্তুত হচ্ছে...</div>';
-  const paragraphs = body.split('\n\n');
-  return paragraphs
-    .map((p) => {
-      const trimmed = p.trim();
-      if (!trimmed) return '';
-      if (trimmed.startsWith('### ')) {
-        return `<h3 class="text-xl sm:text-2xl font-bold font-serif text-paper-text dark:text-night-text mt-8 mb-3">${trimmed.slice(4)}</h3>`;
-      }
-      if (trimmed.startsWith('## ')) {
-        return `<h2 class="text-2xl sm:text-3xl font-bold font-serif text-paper-text dark:text-night-text mt-10 mb-4">${trimmed.slice(3)}</h2>`;
-      }
-      if (trimmed === '---') {
-        return `<hr class="my-8 border-paper-border/80 dark:border-night-border/80" />`;
-      }
-
-      // Convert **bold** and *italic*
-      let formatted = trimmed
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/\n/g, '<br />');
-
-      // 1. Convert raw HTML sup footnote links (e.g. <sup id="fnref-1"><a href="#fn-1">[১]</a></sup>) to interactive buttons
-      formatted = formatted.replace(/<sup[^>]*id="fnref-(\d+)"[^>]*><a[^>]*href="#fn-\d+"[^>]*>(.*?)<\/a><\/sup>/gi, (match, num, inner) => {
-        return `<button type="button" data-fn-id="${num}" class="footnote-btn inline-flex items-center justify-center mx-1 px-2 py-0.5 rounded-lg text-xs font-mono font-bold bg-amber-500/15 dark:bg-amber-400/20 text-paper-accent dark:text-night-accent hover:bg-paper-accent hover:text-white dark:hover:bg-night-accent dark:hover:text-stone-900 transition-all cursor-pointer select-none align-super shadow-2xs"><span>${inner || '[' + num + ']'}</span></button>`;
-      });
-
-      // 2. Convert markdown footnote references like [1] or [১] to interactive buttons
-      formatted = formatted.replace(/\[([0-9০-৯]+)\]/g, (match, numStr) => {
-        const enNum = normalizeDigitId(numStr);
-        return `<button type="button" data-fn-id="${enNum}" class="footnote-btn inline-flex items-center justify-center mx-1 px-2 py-0.5 rounded-lg text-xs font-mono font-bold bg-amber-500/15 dark:bg-amber-400/20 text-paper-accent dark:text-night-accent hover:bg-paper-accent hover:text-white dark:hover:bg-night-accent dark:hover:text-stone-900 transition-all cursor-pointer select-none align-super shadow-2xs"><span>[${numStr}]</span></button>`;
-      });
-
-      return `<p class="text-base sm:text-lg text-paper-text/90 dark:text-night-text/90 font-serif leading-relaxed mb-6">${formatted}</p>`;
-    })
-    .join('');
+interface Props {
+  post: CollectionEntry<'posts'>;
 }
 
-const renderedContent = renderBody(displayPost.body);
+const { post } = Astro.props;
+const { Content } = await post.render();
+
+const catInfo = CATEGORY_MAP[post.data.category] || { label: post.data.category, slug: post.data.category };
+const formattedDate = formatBengaliDate(post.data.publishedAt);
+const readingTime = calculateReadingTime(post.body || '');
 ---
 
-<Layout
-  title={`${displayPost.title} | আফফান লাবীব (Affan Labib)`}
-  description={displayPost.description}
-  article={{
-    publishedTime: displayPost.publishedAt,
-    tags: displayPost.tags
-  }}
+<BaseLayout
+  title={`${post.data.title} | আফফান লাবীব`}
+  description={post.data.description}
+  type="article"
+  publishedTime={post.data.publishedAt}
 >
-  <!-- Reading Progress Bar -->
-  <div class="fixed top-0 inset-x-0 h-1 z-50 bg-paper-border/40 dark:border-night-border/40">
-    <div id="reading-progress" class="h-full bg-gradient-to-r from-paper-accent via-amber-500 to-orange-500 w-0 transition-all duration-75"></div>
-  </div>
+  <!-- Sticky Reading Progress Bar -->
+  <div id="reading-progress" class="fixed top-0 left-0 h-1 bg-paper-accent dark:bg-night-accent z-50 w-0 transition-all duration-75"></div>
 
-  <article id="article-main" class="max-w-3xl mx-auto space-y-8" data-is-fallback={isFallback ? 'true' : 'false'} data-slug={displayPost.slug}>
-    <!-- Meta Header -->
-    <header class="space-y-4 pb-8 border-b border-paper-border/80 dark:border-night-border/80">
-      <div class="flex items-center gap-2 text-xs font-sans text-paper-muted dark:text-night-muted">
-        <a href="/" class="hover:underline">প্রধান পাতা</a>
-        <span>/</span>
-        <a id="article-category-link" href={`/category/${displayPost.category}`} class="text-paper-accent dark:text-night-accent font-medium hover:underline">
-          {categoryName}
+  <article class="max-w-2xl mx-auto font-serif rounded-3xl border border-paper-border/70 dark:border-night-border/70 bg-paper-surface/85 dark:bg-night-surface/85 backdrop-blur-xl p-6 sm:p-10 shadow-sm">
+    <!-- Header -->
+    <header class="mb-10 space-y-5">
+      <div class="flex items-center gap-2 text-xs font-sans text-paper-muted dark:text-night-muted flex-wrap">
+        <a
+          href={`/category/${catInfo.slug}`}
+          class="font-semibold text-paper-accent dark:text-night-accent hover:underline font-serif text-sm"
+        >
+          {catInfo.label}
         </a>
+        <span>·</span>
+        <time datetime={post.data.publishedAt}>{formattedDate}</time>
+        <span>·</span>
+        <span>{readingTime}</span>
+        {post.data.originalAuthor && (
+          <>
+            <span>·</span>
+            <span class="text-paper-text/80 dark:text-night-text/80">মূল লেখক: {post.data.originalAuthor}</span>
+          </>
+        )}
       </div>
 
-      <h1 id="article-title" class="text-2xl sm:text-3xl md:text-4xl font-bold font-serif text-paper-text dark:text-night-text leading-tight tracking-tight">
-        {displayPost.title}
+      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-paper-text dark:text-night-text font-serif leading-tight">
+        {post.data.title}
       </h1>
 
-      <div class="flex flex-wrap items-center justify-between gap-4 pt-2 text-xs font-sans text-paper-muted dark:text-night-muted">
-        <div class="flex items-center gap-3">
-          <ThemeAvatar
-            class="w-9 h-9 rounded-full ring-2 ring-paper-accent/30 shrink-0"
-            imgClass="w-full h-full object-contain p-0.5"
-            alt="আফফান লাবীব"
-          />
-          <div>
-            <span class="font-bold text-paper-text dark:text-night-text block author-name-text">আফফান লাবীব</span>
-            <span class="text-[11px] author-edu-text">তাখাসসুস ফিল আদব ও ইসলামিক স্টাডিজ</span>
-          </div>
+      <!-- Author Byline Bar -->
+      <div class="flex items-center gap-3 pt-2 pb-1 border-b border-paper-border/50 dark:border-night-border/50">
+        <img
+          src={author.avatar}
+          alt={author.name}
+          class="author-avatar-img w-10 h-10 rounded-full object-cover ring-2 ring-paper-accent/20"
+        />
+        <div class="text-xs font-sans">
+          <span class="font-semibold text-paper-text dark:text-night-text block">{author.name}</span>
+          <span class="text-paper-muted dark:text-night-muted">{author.tagline}</span>
         </div>
+      </div>
 
-        <div class="flex items-center gap-2 flex-wrap">
-          <time id="article-date" datetime={displayPost.publishedAt}>{displayPost.formattedDate}</time>
-          <span>·</span>
-          <span id="article-read-time">{readTimeBn} মিনিটে পাঠ্য</span>
-          <span>·</span>
-          <span id="article-views-top-badge" class="inline-flex items-center gap-1 font-mono text-paper-accent dark:text-night-accent font-medium" title="মোট পঠিত সংখ্যা">
-            <span>👁️</span>
-            <span id="article-views-count-top">--</span>
-          </span>
+      {post.data.previouslyPublished && (
+        <div class="inline-flex items-center gap-1.5 text-xs font-sans text-paper-muted dark:text-night-muted bg-paper-border/30 dark:bg-night-border/40 px-2.5 py-1 rounded">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+          </svg>
+          <span>পূর্বে প্রকাশিত: {post.data.previouslyPublished}</span>
         </div>
+      )}
+
+      <p class="text-lg text-paper-muted dark:text-night-muted leading-relaxed font-serif italic border-l-2 border-paper-accent/40 dark:border-night-accent/40 pl-4 py-1">
+        {post.data.description}
+      </p>
+
+      <!-- Tags -->
+      <div class="flex flex-wrap gap-2 pt-1">
+        {post.data.tags.map((tag) => (
+          <span class="text-xs font-sans px-2.5 py-1 rounded-md bg-paper-border/30 dark:bg-night-border/40 text-paper-muted dark:text-night-muted">
+            #{tag}
+          </span>
+        ))}
       </div>
     </header>
 
-    <!-- Post Body Content -->
-    <div id="article-body-content" class="prose dark:prose-invert max-w-none text-paper-text dark:text-night-text pt-2">
-      <Fragment set:html={renderedContent} />
+    <!-- Book Review Metadata InfoCard (if category is book review) -->
+    {post.data.bookInfo && (
+      <BookInfoCard {...post.data.bookInfo} />
+    )}
+
+    <!-- Main Article Body -->
+    <div class="prose prose-lg dark:prose-invert max-w-none text-paper-text dark:text-night-text leading-relaxed">
+      <Content />
     </div>
 
-    <!-- Footnotes Section if present -->
-    {displayPost.footnotes && displayPost.footnotes.length > 0 && (
-      <section class="mt-12 pt-6 border-t border-paper-border/80 dark:border-night-border/80">
-        <h4 class="text-sm font-bold font-sans text-paper-accent dark:text-night-accent uppercase tracking-wider mb-4 flex items-center gap-2">
-          <span>📑</span>
-          <span>টীকা ও তথ্যসূত্র</span>
-        </h4>
-        <ol class="space-y-2 list-decimal list-inside text-xs sm:text-sm text-paper-muted dark:text-night-muted font-serif">
-          {displayPost.footnotes.map((fn: any) => (
-            <li id={`fn-${fn.id}`} class="leading-relaxed">
-              <span class="font-serif">{fn.text}</span>
+    <!-- Footnotes Reference Section (if exists) -->
+    {post.data.footnotes && post.data.footnotes.length > 0 && (
+      <section class="mt-14 pt-8 border-t border-paper-border/80 dark:border-night-border/80 text-sm">
+        <h3 class="font-sans font-bold text-xs uppercase tracking-wider text-paper-accent dark:text-night-accent mb-4 flex items-center gap-2">
+          <span>📚</span> <span>তথ্যসূত্র ও টীকা (Footnotes & References)</span>
+        </h3>
+        <ol class="space-y-3 list-decimal list-inside text-paper-muted dark:text-night-muted">
+          {post.data.footnotes.map((fn) => (
+            <li id={`fn-${fn.id}`} class="leading-relaxed p-2.5 rounded-xl bg-paper-surface/50 dark:bg-night-surface/50 border border-paper-border/40 dark:border-night-border/40">
+              <span class="text-paper-text dark:text-night-text font-serif">{fn.text}</span>
+              <a href={`#fnref-${fn.id}`} class="inline-block ml-2 text-paper-accent dark:text-night-accent text-xs font-sans hover:underline" title="লেখায় ফিরে যান">
+                ↩ ফিরে যান
+              </a>
             </li>
           ))}
         </ol>
       </section>
     )}
 
-    <!-- Footnotes JSON Store for client popover -->
-    <script id="article-footnotes-data" type="application/json" set:html={JSON.stringify(displayPost.footnotes || [])} />
-
-    <!-- Article Footer: Tags & Action Bar -->
-    <footer class="pt-8 border-t border-paper-border/80 dark:border-night-border/80 space-y-6">
-      <!-- Tags -->
-      <div id="article-tags-container" class="flex flex-wrap items-center gap-2">
-        <span class="text-xs font-sans text-paper-muted dark:text-night-muted">ট্যাগ:</span>
-        {displayPost.tags.map((tag) => (
-          <span class="px-3 py-1 rounded-full bg-paper-border/50 dark:bg-night-border/50 text-paper-muted dark:text-night-muted text-xs font-sans">
-            #{tag}
-          </span>
-        ))}
+    <!-- Social Share Bar & Actions -->
+    <div class="mt-14 pt-8 border-t border-paper-border/70 dark:border-night-border/70 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div class="text-xs font-sans font-medium text-paper-muted dark:text-night-muted flex items-center gap-2">
+        <span>লেখাটি ভালো লাগলে শেয়ার করতে পারেন:</span>
       </div>
 
-      <!-- Social Share Bar & Actions -->
-      <div class="p-4 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-surface/60 dark:bg-night-surface/60 flex flex-wrap items-center justify-between gap-4 text-xs font-sans">
-        <span class="font-medium text-paper-text dark:text-night-text flex items-center gap-1.5">
-          <span>📤</span>
-          <span>লেখাটি শেয়ার করুন:</span>
-        </span>
+      <div class="flex items-center gap-2 text-xs font-sans">
+        <!-- Facebook Share -->
+        <a
+          href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(Astro.url.href)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="px-3.5 py-1.5 rounded-lg bg-[#1877F2] text-white font-semibold hover:bg-[#166fe5] shadow-2xs hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5"
+        >
+          <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+          </svg>
+          <span>Facebook শেয়ার</span>
+        </a>
+        <!-- WhatsApp Share -->
+        <a
+          href={`https://api.whatsapp.com/send?text=${encodeURIComponent(post.data.title + ' ' + Astro.url.href)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="px-3.5 py-1.5 rounded-lg bg-[#25D366] text-white font-semibold hover:bg-[#20ba59] shadow-2xs hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5"
+        >
+          <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/>
+          </svg>
+          <span>WhatsApp শেয়ার</span>
+        </a>
+        <!-- Copy Link Button -->
+        <button
+          id="copy-link-btn"
+          type="button"
+          class="px-3 py-1.5 rounded border border-paper-border dark:border-night-border hover:border-paper-accent dark:hover:border-night-accent hover:text-paper-accent dark:hover:text-night-accent transition-colors cursor-pointer"
+        >
+          লিংক কপি
+        </button>
 
-        <div class="flex items-center gap-2 flex-wrap">
-          <!-- Facebook Share -->
-          <a
-            id="share-fb-link"
-            href={`https://www.facebook.com/sharer/sharer.php?u=https://affan-labib-blog.vercel.app/${displayPost.slug}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="px-3 py-1.5 rounded-lg bg-blue-600/10 text-blue-700 dark:text-blue-400 border border-blue-600/20 hover:bg-blue-600 hover:text-white transition-colors"
-          >
-            Facebook
-          </a>
-
-          <!-- WhatsApp Share -->
-          <a
-            id="share-wa-link"
-            href={`https://api.whatsapp.com/send?text=${encodeURIComponent(displayPost.title + ' ' + 'https://affan-labib-blog.vercel.app/' + displayPost.slug)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="px-3 py-1.5 rounded-lg bg-emerald-600/10 text-emerald-700 dark:text-emerald-400 border border-emerald-600/20 hover:bg-emerald-600 hover:text-white transition-colors"
-          >
-            WhatsApp
-          </a>
-
-          <!-- Copy Link -->
-          <button
-            id="copy-link-btn"
-            type="button"
-            class="px-3 py-1.5 rounded-lg border border-paper-border dark:border-night-border hover:border-paper-accent transition-colors cursor-pointer"
-          >
-            লিঙ্ক কপি
-          </button>
-
-          <!-- Print Button -->
-          <button
-            onclick="window.print()"
-            type="button"
-            class="px-3 py-1.5 rounded-lg border border-paper-border dark:border-night-border hover:border-paper-accent transition-colors cursor-pointer"
-          >
-            🖨️ প্রিন্ট
-          </button>
-        </div>
+        <!-- Save / Print Button -->
+        <button
+          onclick="window.print()"
+          type="button"
+          class="px-3 py-1.5 rounded border border-paper-border dark:border-night-border hover:border-paper-accent dark:hover:border-night-accent hover:text-paper-accent dark:hover:text-night-accent transition-colors flex items-center gap-1 cursor-pointer"
+          title="অফলাইনে সেভ বা প্রিন্ট করুন"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+          </svg>
+          সেভ / প্রিন্ট
+        </button>
       </div>
-    </footer>
+    </div>
 
-    <!-- Reader Reactions: Views & Minimalist Heart (❤️ ৪২) -->
-    <div class="pt-8 border-t border-paper-border/80 dark:border-night-border/80 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div class="flex items-center gap-2 text-xs font-sans text-paper-muted dark:text-night-muted">
-        <span>পাঠক প্রতিক্রিয়া:</span>
-        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-paper-border/40 dark:bg-night-border/40 font-mono text-paper-text dark:text-night-text">
-          <span>👁️</span>
-          <span id="article-views-count-bottom">--</span>
-          <span class="font-sans text-[11px]">পঠিত</span>
-        </span>
-      </div>
+    <!-- Offline Saved Badge -->
+    <div class="mt-4 flex items-center justify-center gap-2 text-xs font-sans text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40 py-1.5 px-3 rounded-md">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+      </svg>
+      <span>লেখাটি আপনার ডিভাইসে অফলাইনে সংরক্ষিত রয়েছে। ইন্টারনেট সংযোগ ছাড়াও পড়তে পারবেন।</span>
+    </div>
 
-      <!-- Minimalist Heart Button: icon + count only (❤️ ৪২) -->
-      <button
-        id="main-like-btn"
-        type="button"
-        class="group relative inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 active:scale-95 transition-all duration-200 cursor-pointer text-rose-600 dark:text-rose-400 font-bold shadow-2xs select-none"
-        title="ভালো লাগলে ভালোবাসা দিন"
+    <!-- Back to Home Button -->
+    <div class="mt-10 text-center">
+      <a
+        href="/"
+        class="inline-flex items-center gap-1.5 text-sm font-sans font-medium text-paper-muted dark:text-night-muted hover:text-paper-accent dark:hover:text-night-accent transition-colors"
       >
-        <span id="main-like-icon" class="text-xl transition-transform duration-200 group-hover:scale-125">🤍</span>
-        <span id="main-like-count" class="font-mono text-base font-bold">০</span>
-      </button>
+        <span>← সব লেখায় ফিরে যান</span>
+      </a>
     </div>
   </article>
 
-  <!-- Floating Quick-Love Action Pill (Reveals on scroll) -->
-  <aside
-    id="floating-love-pill"
-    class="fixed bottom-6 right-6 z-40 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none"
-    aria-label="কুইক লাইক"
-  >
-    <button
-      id="floating-like-btn"
-      type="button"
-      class="group flex items-center gap-2 px-4 py-2.5 rounded-full bg-paper-surface/95 dark:bg-night-surface/95 backdrop-blur-xl border border-rose-500/40 shadow-xl hover:shadow-2xl active:scale-95 transition-all text-rose-600 dark:text-rose-400 font-bold text-sm cursor-pointer select-none"
-      title="ভালো লাগলে ভালোবাসা দিন"
-    >
-      <span id="floating-like-icon" class="text-lg transition-transform duration-200 group-hover:scale-125">🤍</span>
-      <span id="floating-like-count" class="font-mono text-sm font-bold">০</span>
-    </button>
-  </aside>
-
-  <!-- In-Situ Footnote Popover Modal (Full Focus Backdrop) -->
+  <!-- Interactive In-Situ Footnote Popover / Bottom Sheet Modal -->
   <div
     id="footnote-popover-modal"
-    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-200"
+    class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/85 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-200"
     role="dialog"
     aria-modal="true"
+    aria-labelledby="fn-popover-title"
   >
+    <!-- Modal Card: 100% Opaque High-Contrast Luxury Slate/Gold Plaque -->
     <div
       id="footnote-popover-card"
-      class="bg-[#FAF7F2] dark:bg-[#1C1917] border-2 border-amber-600/40 dark:border-amber-400/40 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl space-y-5 transform translate-y-6 transition-all duration-200"
+      class="w-full max-w-lg bg-[#0F172A] border-t-2 sm:border-2 border-amber-500 rounded-t-3xl sm:rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] p-5 sm:p-6 font-serif relative transform translate-y-8 sm:translate-y-4 transition-transform duration-200 text-slate-100"
     >
-      <div class="flex items-center justify-between pb-3 border-b border-amber-900/10 dark:border-amber-100/10">
-        <span class="text-sm font-sans font-bold text-amber-800 dark:text-amber-400 fn-modal-title flex items-center gap-2">
-          <span class="text-lg">📌</span>
-          <span>টীকা ও তথ্যসূত্র <span id="fn-popover-num" class="font-mono text-base">[১]</span></span>
-        </span>
-        <button id="close-fn-popover-btn" type="button" class="text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 text-xl p-1.5 rounded-xl hover:bg-stone-200/50 dark:hover:bg-stone-800 transition-colors cursor-pointer" aria-label="বন্ধ করুন">✕</button>
+      <!-- Mobile Pull handle indicator -->
+      <div class="sm:hidden w-12 h-1.5 bg-amber-500/40 rounded-full mx-auto mb-3.5"></div>
+
+      <!-- Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div class="flex items-center gap-2">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/50 text-amber-300 font-sans font-bold text-xs">
+            <span>📚</span>
+            <span id="fn-popover-title">তথ্যসূত্র ও বিশেষ টীকা</span>
+            <span id="fn-popover-num" class="font-mono text-amber-200 text-sm"></span>
+          </span>
+        </div>
+        <button
+          id="close-fn-popover-btn"
+          type="button"
+          class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-amber-400 hover:text-white border border-slate-700 flex items-center justify-center text-sm font-sans cursor-pointer transition-colors"
+          title="বন্ধ করুন (Esc)"
+        >
+          ✕
+        </button>
       </div>
 
-      <div class="py-2 min-h-[60px]">
-        <p id="fn-popover-content" class="text-base sm:text-lg font-serif text-stone-900 dark:text-stone-100 leading-relaxed">
-          টীকা লোড হচ্ছে...
+      <!-- Footnote Text Body (High-Contrast Inset Reading Container) -->
+      <div class="my-4 p-4 sm:p-5 rounded-2xl bg-[#1E293B] border border-slate-700/90 shadow-inner">
+        <p id="fn-popover-content" class="text-base sm:text-lg text-slate-50 font-serif leading-relaxed">
+          <!-- Text dynamically loaded here -->
         </p>
       </div>
 
-      <div class="pt-3 flex items-center justify-between border-t border-amber-900/10 dark:border-amber-100/10">
-        <span class="text-xs text-stone-500 dark:text-stone-400 font-sans">
-          পড়া শেষে মূল লেখায় ফিরে যান
+      <!-- Action Bar -->
+      <div class="pt-2 flex items-center justify-between border-t border-slate-800 font-sans text-xs">
+        <span class="text-[11px] text-slate-400 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+          <span>পপআপ বন্ধ করতে বাইরে ট্যাপ করুন</span>
         </span>
-        <button id="done-fn-popover-btn" type="button" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-700 hover:bg-amber-800 dark:bg-amber-500 dark:hover:bg-amber-400 text-white dark:text-stone-950 font-sans text-xs font-semibold shadow-md cursor-pointer transition-all">
-          <span>← ফিরে যান লেখাতে</span>
+        <button
+          id="done-fn-popover-btn"
+          type="button"
+          class="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-xs shadow-lg active:scale-95 transition-all cursor-pointer"
+        >
+          ✓ পড়া শেষ (বন্ধ করুন)
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Client-side Views & Persistent Cloud Love Script -->
+  <!-- Serialized Footnotes Data for in-situ popover -->
+  {post.data.footnotes && (
+    <script id="article-footnotes-data" type="application/json" set:html={JSON.stringify(post.data.footnotes)} />
+  )}
+
   <script is:inline>
-    (function initInteractions() {
-      const slug = document.getElementById('article-main')?.getAttribute('data-slug');
-      if (!slug) return;
-
-      const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
-      function toBn(n) {
-        return (n ?? 0).toString().replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);
-      }
-
-      const topViewsEl = document.getElementById('article-views-count-top');
-      const bottomViewsEl = document.getElementById('article-views-count-bottom');
-      const mainLikeBtn = document.getElementById('main-like-btn');
-      const mainLikeIcon = document.getElementById('main-like-icon');
-      const mainLikeCount = document.getElementById('main-like-count');
-      const floatingPill = document.getElementById('floating-love-pill');
-      const floatingLikeBtn = document.getElementById('floating-like-btn');
-      const floatingLikeIcon = document.getElementById('floating-like-icon');
-      const floatingLikeCount = document.getElementById('floating-like-count');
-
-      let currentLikes = 0;
-      let isLiked = false;
-
-      try {
-        isLiked = localStorage.getItem('liked_' + slug) === 'true';
-      } catch (_) {}
-
-      function updateLikeUI(liked, count) {
-        currentLikes = count;
-        const countBn = toBn(count);
-        if (mainLikeCount) mainLikeCount.textContent = countBn;
-        if (floatingLikeCount) floatingLikeCount.textContent = countBn;
-
-        if (liked) {
-          if (mainLikeIcon) mainLikeIcon.textContent = '❤️';
-          if (floatingLikeIcon) floatingLikeIcon.textContent = '❤️';
-          mainLikeBtn?.classList.add('bg-rose-500/25', 'border-rose-500', 'shadow-md');
-          floatingLikeBtn?.classList.add('bg-rose-500/25', 'border-rose-500');
-        } else {
-          if (mainLikeIcon) mainLikeIcon.textContent = '🤍';
-          if (floatingLikeIcon) floatingLikeIcon.textContent = '🤍';
-          mainLikeBtn?.classList.remove('bg-rose-500/25', 'border-rose-500', 'shadow-md');
-          floatingLikeBtn?.classList.remove('bg-rose-500/25', 'border-rose-500');
-        }
-      }
-
-      // 1. Deduplicated View Counter Call (increments once per session)
-      try {
-        const sessionKey = 'viewed_art_' + slug;
-        if (!sessionStorage.getItem(sessionKey)) {
-          fetch('/api/interactions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ slug, action: 'view' })
-          }).then((r) => r.json()).then((res) => {
-            if (res && res.views !== undefined) {
-              const b = toBn(res.views);
-              if (topViewsEl) topViewsEl.textContent = b;
-              if (bottomViewsEl) bottomViewsEl.textContent = b;
-              sessionStorage.setItem(sessionKey, '1');
-            }
-          }).catch(() => {});
-        }
-      } catch (_) {}
-
-      // 2. Fetch initial stats from Cloud DB
-      fetch(`/api/interactions?slug=${encodeURIComponent(slug)}`)
-        .then((r) => r.json())
-        .then((data) => {
-          if (data && data.success && data.stats) {
-            const v = toBn(data.stats.views || 0);
-            if (topViewsEl) topViewsEl.textContent = v;
-            if (bottomViewsEl) bottomViewsEl.textContent = v;
-            updateLikeUI(isLiked, data.stats.likes || 0);
-          }
-        })
-        .catch(() => {});
-
-      // 3. Like Toggle Handler (Syncs to Cloud permanently)
-      function handleLikeClick() {
-        const nextLiked = !isLiked;
-        isLiked = nextLiked;
-        try {
-          localStorage.setItem('liked_' + slug, nextLiked ? 'true' : 'false');
-        } catch (_) {}
-
-        const nextCount = nextLiked ? currentLikes + 1 : Math.max(0, currentLikes - 1);
-        updateLikeUI(nextLiked, nextCount);
-
-        // Micro-bounce animation
-        mainLikeBtn?.classList.add('scale-110');
-        floatingLikeBtn?.classList.add('scale-110');
-        setTimeout(() => {
-          mainLikeBtn?.classList.remove('scale-110');
-          floatingLikeBtn?.classList.remove('scale-110');
-        }, 200);
-
-        fetch('/api/interactions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ slug, action: 'like', isLike: nextLiked })
-        })
-          .then((r) => r.json())
-          .then((res) => {
-            if (res && res.likes !== undefined) {
-              updateLikeUI(isLiked, res.likes);
-            }
-          })
-          .catch(() => {});
-      }
-
-      mainLikeBtn?.addEventListener('click', handleLikeClick);
-      floatingLikeBtn?.addEventListener('click', handleLikeClick);
-
-      // 4. Floating Love Pill scroll reveal
-      window.addEventListener('scroll', () => {
-        if (!floatingPill) return;
-        if (window.scrollY > 300) {
-          floatingPill.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
-          floatingPill.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
-        } else {
-          floatingPill.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
-          floatingPill.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
-        }
-      }, { passive: true });
-    })();
-  </script>
-</Layout>
-
-
-<script is:inline>
-  (() => {
-    // Reading Progress Indicator
+    // Reading Progress Bar
     window.addEventListener('scroll', () => {
       const progressBar = document.getElementById('reading-progress');
       if (!progressBar) return;
@@ -454,239 +275,101 @@ const renderedContent = renderBody(displayPost.body);
       progressBar.style.width = scrolled + '%';
     }, { passive: true });
 
-    // Copy Article Link
+    // Global Avatar sync if saved in localStorage
+    const savedAvatar = localStorage.getItem('kherokhata_author_avatar');
+    if (savedAvatar) {
+      document.querySelectorAll('.author-avatar-img').forEach((img) => {
+        img.src = savedAvatar;
+      });
+    }
+
     const copyBtn = document.getElementById('copy-link-btn');
     copyBtn?.addEventListener('click', async () => {
       try {
         await navigator.clipboard.writeText(window.location.href);
-        const prev = copyBtn.innerText;
+        const originalText = copyBtn.innerText;
         copyBtn.innerText = 'কপি হয়েছে!';
-        setTimeout(() => { copyBtn.innerText = prev; }, 2000);
-      } catch (err) {}
+        setTimeout(() => {
+          copyBtn.innerText = originalText;
+        }, 2000);
+      } catch (err) {
+        console.error('Failed to copy: ', err);
+      }
     });
 
-    // Offline-Aware External Social Sharing Check
-    const shareFb = document.getElementById('share-fb-link');
-    const shareWa = document.getElementById('share-wa-link');
-
-    [shareFb, shareWa].forEach((btn) => {
-      btn?.addEventListener('click', (e) => {
-        if (!navigator.onLine) {
-          e.preventDefault();
-          alert('📶 সোশ্যাল মিডিয়ায় শেয়ার করার জন্য ইন্টারনেট সংযোগ প্রয়োজন।\n\nআপনি অফলাইনে লেখাটির লিঙ্ক সংরক্ষণ করতে চাইলে "লিঙ্ক কপি" বোতামটি ব্যবহার করতে পারেন।');
-        }
-      });
-    });
-
-    // In-situ Footnote Popover
-    const modal = document.getElementById('footnote-popover-modal');
-    const card = document.getElementById('footnote-popover-card');
+    // In-Situ Footnote Popover Logic
+    const fnModal = document.getElementById('footnote-popover-modal');
+    const fnCard = document.getElementById('footnote-popover-card');
     const fnNum = document.getElementById('fn-popover-num');
     const fnContent = document.getElementById('fn-popover-content');
-    const closeBtn = document.getElementById('close-fn-popover-btn');
-    const doneBtn = document.getElementById('done-fn-popover-btn');
-
-    const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
-    const bnToEnMap = { '০':'0', '১':'1', '২':'2', '৩':'3', '৪':'4', '৫':'5', '৬':'6', '৭':'7', '৮':'8', '৯':'9' };
-    function toEn(str) {
-      return String(str || '').replace(/[০-৯]/g, (d) => bnToEnMap[d] || d);
-    }
-    function toBn(str) {
-      return String(str || '').replace(/[0-9]/g, (d) => bnDigits[Number(d)] || d);
-    }
+    const closeFnBtn = document.getElementById('close-fn-popover-btn');
+    const doneFnBtn = document.getElementById('done-fn-popover-btn');
 
     let footnotesMap = {};
     const fnDataEl = document.getElementById('article-footnotes-data');
     if (fnDataEl) {
       try {
-        const raw = JSON.parse(fnDataEl.textContent || '[]');
-        raw.forEach((f) => {
-          const enId = toEn(f.id);
-          const bnId = toBn(f.id);
-          footnotesMap[f.id] = f.text;
-          footnotesMap[enId] = f.text;
-          footnotesMap[bnId] = f.text;
+        const raw = JSON.parse(fnDataEl.textContent);
+        raw.forEach(function(item) {
+          footnotesMap[item.id] = item.text;
         });
       } catch (e) {}
     }
 
-    function openFootnote(rawId, fallback) {
-      if (!modal || !card) return;
-      const enId = toEn(rawId);
-      const bnId = toBn(rawId);
-      if (fnNum) fnNum.textContent = `[${bnId || rawId}]`;
+    function openFootnote(id, fallbackText) {
+      if (!fnModal || !fnCard) return;
+      const text = footnotesMap[id] || fallbackText || 'কোনো টীকা পাওয়া যায়নি।';
+      if (fnNum) fnNum.textContent = `[${id}]`;
+      if (fnContent) fnContent.textContent = text;
 
-      let text = footnotesMap[rawId] || footnotesMap[enId] || footnotesMap[bnId] || fallback;
-      if (!text) {
-        const targetLi = document.getElementById(`fn-${rawId}`) || document.getElementById(`fn-${enId}`) || document.getElementById(`fn-${bnId}`);
-        if (targetLi) text = targetLi.textContent.trim();
-      }
-      if (fnContent) fnContent.textContent = text || 'কোনো টীকা পাওয়া যায়নি।';
-      modal.classList.remove('opacity-0', 'pointer-events-none');
-      card.classList.remove('translate-y-6');
-      card.classList.add('translate-y-0');
+      fnModal.classList.remove('opacity-0', 'pointer-events-none');
+      fnModal.classList.add('opacity-100', 'pointer-events-auto');
+      fnCard.classList.remove('translate-y-8', 'sm:translate-y-4');
+      fnCard.classList.add('translate-y-0');
     }
 
     function closeFootnote() {
-      if (!modal || !card) return;
-      modal.classList.add('opacity-0', 'pointer-events-none');
-      card.classList.add('translate-y-6');
-      card.classList.remove('translate-y-0');
+      if (!fnModal || !fnCard) return;
+      fnModal.classList.add('opacity-0', 'pointer-events-none');
+      fnModal.classList.remove('opacity-100', 'pointer-events-auto');
+      fnCard.classList.add('translate-y-8', 'sm:translate-y-4');
+      fnCard.classList.remove('translate-y-0');
     }
 
-    closeBtn?.addEventListener('click', closeFootnote);
-    doneBtn?.addEventListener('click', closeFootnote);
-    modal?.addEventListener('click', (e) => { if (e.target === modal) closeFootnote(); });
-    window.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeFootnote(); });
+    closeFnBtn?.addEventListener('click', closeFootnote);
+    doneFnBtn?.addEventListener('click', closeFootnote);
 
-    // 1. Intercept all .footnote-btn clicks
-    document.querySelectorAll('.footnote-btn').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const dataId = btn.getAttribute('data-fn-id');
-        const textDigits = btn.textContent.replace(/[^0-9০-৯]/g, '');
-        const fnId = dataId || textDigits;
-        openFootnote(fnId, '');
-      });
+    // Close on clicking backdrop
+    fnModal?.addEventListener('click', (e) => {
+      if (e.target === fnModal) {
+        closeFootnote();
+      }
     });
 
-    // 2. Intercept any native anchor tags pointing to footnotes (e.g. href="#fn-1", href="#fn:1")
-    document.querySelectorAll('a[href*="#fn-"], a[href*="#fn:"]').forEach((a) => {
-      a.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const href = a.getAttribute('href') || '';
-        const match = href.match(/#fn[-:]?([0-9০-৯]+)/i);
-        const fnId = match ? match[1] : a.textContent.replace(/[^0-9০-৯]/g, '');
-        openFootnote(fnId, '');
-      });
+    // Close on Escape key
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && fnModal && !fnModal.classList.contains('pointer-events-none')) {
+        closeFootnote();
+      }
     });
 
-    // Check if this article was deleted by author
-    try {
-      const deletedSlugs = JSON.parse(localStorage.getItem('kherokhata_deleted_posts') || '[]');
-      const pathSlug = window.location.pathname.replace(/^\/|\/$/g, '');
-      if (deletedSlugs.includes(pathSlug)) {
-        const article = document.querySelector('article');
-        if (article) {
-          article.innerHTML = `
-            <div class="py-20 text-center space-y-4">
-              <span class="text-4xl block">🍃</span>
-              <h2 class="text-2xl font-bold font-serif text-paper-text dark:text-night-text">এই রচনাটি মুছে ফেলা হয়েছে</h2>
-              <p class="text-sm font-serif text-paper-muted dark:text-night-muted">লেখক এই লেখাটি মুছে ফেলেছেন বা সরিয়ে নিয়েছেন।</p>
-              <a href="/" class="inline-block px-5 py-2.5 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-sans text-xs font-semibold hover:opacity-95">
-                ← প্রধান পাতায় ফিরে যান
-              </a>
-            </div>
-          `;
-          return;
-        }
-      }
-    } catch (e) {}
+    // Intercept footnote clicks in article
+    document.querySelectorAll('a[href^="#fn-"], sup[id^="fnref-"] a').forEach(function(link) {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const href = link.getAttribute('href') || '';
+        const idMatch = href.match(/#fn-(\d+)/);
+        const fnId = idMatch ? idMatch[1] : link.textContent.replace(/[^\d]/g, '');
 
-    // Resilient Fallback Hydration for newly written posts
-    const articleEl = document.getElementById('article-main');
-    const isFallbackMode = articleEl?.getAttribute('data-is-fallback') === 'true';
-    const currentSlug = articleEl?.getAttribute('data-slug') || window.location.pathname.replace(/^\/|\/$/g, '');
-
-    if (isFallbackMode && currentSlug) {
-      function hydrateDynamicPost(p) {
-        if (!p) return;
-        document.title = `${p.title} | আফফান লাবীব`;
-
-        const titleEl = document.getElementById('article-title');
-        if (titleEl) titleEl.innerText = p.title;
-
-        const catEl = document.getElementById('article-category-link');
-        const categoryLabels = {
-          chinta: 'চিন্তা',
-          pathalap: 'পাঠালাপ',
-          itihas: 'ইতিহাস',
-          'boi-alochona': 'বই-আলোচনা',
-          onubad: 'অনুবাদ'
-        };
-        if (catEl) {
-          catEl.innerText = categoryLabels[p.category] || p.category;
-          catEl.href = `/category/${p.category}`;
+        let fallbackText = '';
+        const targetLi = document.getElementById(`fn-${fnId}`);
+        if (targetLi) {
+          const span = targetLi.querySelector('.font-serif');
+          fallbackText = span ? span.textContent : targetLi.textContent;
         }
 
-        const dateEl = document.getElementById('article-date');
-        if (dateEl) dateEl.innerText = p.formattedDate || p.publishedAt;
-
-        const words = p.wordCount || (p.body ? p.body.trim().split(/\s+/).length : 200);
-        const readMins = Math.max(1, Math.ceil(words / 100));
-        const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
-        const readMinsBn = readMins.toString().replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);
-        const readEl = document.getElementById('article-read-time');
-        if (readEl) readEl.innerText = `${readMinsBn} মিনিটে পাঠ্য`;
-
-        const bodyEl = document.getElementById('article-body-content');
-        if (bodyEl && p.body) {
-          const paragraphs = p.body.split('\n\n');
-          bodyEl.innerHTML = paragraphs.map((item) => {
-            const trimmed = item.trim();
-            if (!trimmed) return '';
-            if (trimmed.startsWith('### ')) return `<h3 class="text-xl sm:text-2xl font-bold font-serif text-paper-text dark:text-night-text mt-8 mb-3">${trimmed.slice(4)}</h3>`;
-            if (trimmed.startsWith('## ')) return `<h2 class="text-2xl sm:text-3xl font-bold font-serif text-paper-text dark:text-night-text mt-10 mb-4">${trimmed.slice(3)}</h2>`;
-            if (trimmed === '---') return `<hr class="my-8 border-paper-border/80 dark:border-night-border/80" />`;
-            let formatted = trimmed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>').replace(/\n/g, '<br />');
-            formatted = formatted.replace(/\[(\d+)\]/g, `<button type="button" data-fn-id="$1" class="footnote-btn inline-flex items-center justify-center mx-1 px-1.5 py-0.5 rounded text-xs font-mono font-bold bg-amber-500/15 dark:bg-amber-400/20 text-paper-accent dark:text-night-accent hover:bg-paper-accent hover:text-white dark:hover:bg-night-accent dark:hover:text-stone-900 transition-colors cursor-pointer select-none align-super"><span>[$1]</span></button>`);
-            return `<p class="text-base sm:text-lg text-paper-text/90 dark:text-night-text/90 font-serif leading-relaxed mb-6">${formatted}</p>`;
-          }).join('');
-
-          bodyEl.querySelectorAll('.footnote-btn').forEach((btn) => {
-            btn.addEventListener('click', (ev) => {
-              ev.preventDefault();
-              ev.stopPropagation();
-              const fnId = btn.getAttribute('data-fn-id');
-              const fnItem = (p.footnotes || []).find((f) => f.id == fnId);
-              openFootnote(fnId, fnItem ? fnItem.text : '');
-            });
-          });
-        }
-
-        if (Array.isArray(p.footnotes)) {
-          p.footnotes.forEach((f) => { footnotesMap[f.id] = f.text; });
-        }
-      }
-
-      // 1. Check localStorage first
-      let localFound = null;
-      try {
-        const custom = JSON.parse(localStorage.getItem('kherokhata_custom_posts') || '[]');
-        localFound = custom.find((p) => p.slug === currentSlug);
-      } catch (e) {}
-
-      if (localFound) {
-        hydrateDynamicPost(localFound);
-      } else {
-        // 2. Fetch from /api/posts
-        fetch('/api/posts', { cache: 'no-store' })
-          .then((r) => r.json())
-          .then((d) => {
-            if (d && Array.isArray(d.posts)) {
-              const sp = d.posts.find((p) => p.slug === currentSlug);
-              if (sp) {
-                hydrateDynamicPost(sp);
-              } else {
-                if (articleEl) {
-                  articleEl.innerHTML = `
-                    <div class="py-20 text-center space-y-4">
-                      <span class="text-4xl block">🍃</span>
-                      <h2 class="text-2xl font-bold font-serif text-paper-text dark:text-night-text">এই রচনাটি খুঁজে পাওয়া যায়নি</h2>
-                      <p class="text-sm font-serif text-paper-muted dark:text-night-muted">সম্ভবত লেখাটি এখনো প্রকাশিত হয়নি অথবা লেখক সরিয়ে নিয়েছেন।</p>
-                      <a href="/" class="inline-block px-5 py-2.5 rounded-xl bg-paper-accent dark:bg-night-accent text-white font-sans text-xs font-semibold hover:opacity-95">
-                        ← প্রধান পাতায় ফিরে যান
-                      </a>
-                    </div>
-                  `;
-                }
-              }
-            }
-          })
-          .catch(() => {});
-      }
-    }
-  })();
-</script>
+        openFootnote(fnId, fallbackText);
+      });
+    });
+  </script>
+</BaseLayout>

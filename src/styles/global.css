@@ -3,106 +3,143 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --bg-color: #FAF8F5;
+    --text-color: #111827;
+    --card-bg: #FFFFFF;
+    --border-color: #E5E7EB;
+  }
+
+  html.sepia {
+    --bg-color: #FBF0D9;
+    --text-color: #2D241E;
+    --card-bg: #F5E6CA;
+    --border-color: #E6D3B1;
+  }
+
+  html.dark {
+    --bg-color: #141416;
+    --text-color: #EDE8E1;
+    --card-bg: #1D1D21;
+    --border-color: #2C2C33;
+  }
+
   html {
+    background-color: var(--bg-color);
+    color: var(--text-color);
     scroll-behavior: smooth;
+    font-family: 'Hind Siliguri', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
   }
+
+  /* Instant Mobile Touch Ergonomics: Removes 300ms tap delay & removes flickers */
+  html, body, a, button, [role="button"], article, input, select, textarea {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Hind Siliguri', 'Kalpurush', 'Noto Serif Bengali', sans-serif;
+    letter-spacing: -0.01em;
+  }
+
+  /* Custom subtle paper selection highlight */
+  ::selection {
+    background-color: #FED7AA;
+    color: #431407;
+  }
+
+  html.sepia ::selection {
+    background-color: #E8CF9F;
+    color: #381E08;
+  }
+
+  html.dark ::selection {
+    background-color: #9A3412;
+    color: #FFEDD5;
+  }
 }
 
-/* Sepia Mode Custom Palette */
-html.sepia {
-  background-color: #F6EFE2 !important;
-  color: #3E3024 !important;
-}
-
+/* Sepia Mode Theme Overrides */
 html.sepia body {
-  background-color: #F6EFE2 !important;
-  color: #3E3024 !important;
-}
-
-html.sepia .bg-paper-surface {
-  background-color: #FCF6EC !important;
+  background-color: #FBF0D9 !important;
+  color: #2D241E !important;
 }
 
 html.sepia .bg-paper-bg {
-  background-color: #F6EFE2 !important;
+  background-color: #FBF0D9 !important;
 }
 
-html.sepia .border-paper-border {
-  border-color: #DFD2BD !important;
+html.sepia .bg-paper-surface {
+  background-color: #F5E6CA !important;
 }
 
 html.sepia .text-paper-text {
-  color: #3E3024 !important;
+  color: #2D241E !important;
 }
 
 html.sepia .text-paper-muted {
-  color: #796551 !important;
+  color: #6E5C4E !important;
 }
 
-/* Sepia Mode Footnote Popover Modal - Crystal-Clear Contrast */
-html.sepia #footnote-popover-card {
-  background-color: #FBF4E8 !important;
-  border-color: #B58448 !important;
-  color: #2D2115 !important;
-  box-shadow: 0 25px 50px -12px rgba(62, 48, 36, 0.45) !important;
-}
-html.sepia #fn-popover-content {
-  color: #2D2115 !important;
-}
-html.sepia #fn-popover-num,
-html.sepia .fn-modal-title {
-  color: #8C430B !important;
-}
-html.sepia #close-fn-popover-btn {
-  color: #6B543D !important;
-}
-html.sepia #close-fn-popover-btn:hover {
-  background-color: #EFE3CE !important;
-  color: #2D2115 !important;
-}
-html.sepia #done-fn-popover-btn {
-  background-color: #8C430B !important;
-  color: #FFFFFF !important;
-}
-html.sepia #done-fn-popover-btn:hover {
-  background-color: #723406 !important;
+html.sepia .border-paper-border {
+  border-color: #E2CEAA !important;
 }
 
-/* Liquid / Ambient Animations */
-@keyframes spinSlow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+html.sepia .bg-paper-accent {
+  background-color: #8C4E1A !important;
 }
 
-.animate-spin-slow {
-  animation: spinSlow 12s linear infinite;
+html.sepia .text-paper-accent {
+  color: #8C4E1A !important;
 }
 
-@keyframes liquidPulse {
-  0%, 100% { transform: scale(1); opacity: 0.7; }
-  50% { transform: scale(1.04); opacity: 0.9; }
+html.sepia .border-paper-accent {
+  border-color: #8C4E1A !important;
 }
 
-.animate-liquid-pulse {
-  animation: liquidPulse 6s ease-in-out infinite;
+html.sepia .prose {
+  color: #2D241E !important;
 }
 
-/* Subtle Vignette Gradient */
-.bg-radial-vignette {
-  background: radial-gradient(circle at 50% 30%, transparent 50%, rgba(0, 0, 0, 0.03) 100%);
+html.sepia .prose blockquote {
+  background-color: #F2DEBD !important;
+  border-left-color: #8C4E1A !important;
+  color: #3D2C1E !important;
 }
 
-.dark .bg-radial-vignette {
-  background: radial-gradient(circle at 50% 30%, transparent 50%, rgba(0, 0, 0, 0.35) 100%);
+/* Arabic typography styling */
+.arabic-text {
+  font-family: 'Amiri', 'Scheherazade New', 'Traditional Arabic', serif;
+  direction: rtl;
+  unicode-bidi: embed;
+  line-height: 2.2;
 }
 
-/* Hide scrollbar utility */
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
+/* Subtle page transition */
+body {
+  transition: background-color 0.25s ease, color 0.25s ease;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+
+/* Subtle print/paper feel */
+.paper-texture {
+  background-image: radial-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+html.dark .paper-texture {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 0);
+}
+
+@keyframes border-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.animate-border-rotate {
+  animation: border-rotate 7s linear infinite;
 }

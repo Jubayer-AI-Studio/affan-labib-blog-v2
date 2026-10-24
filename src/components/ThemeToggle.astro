@@ -1,0 +1,128 @@
+---
+// src/components/ThemeToggle.astro
+---
+
+<button
+  type="button"
+  aria-label="Toggle Reading Theme Mode"
+  class="theme-toggle-btn group relative inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/80 dark:bg-night-surface/80 backdrop-blur-md hover:border-paper-accent dark:hover:border-night-accent shadow-2xs hover:shadow-sm transition-all duration-300 cursor-pointer text-xs font-sans active:scale-95"
+  title="রিডিং মোড পরিবর্তন করুন (দিন · সেপিয়া বই · রাত)"
+>
+  <!-- Light Icon -->
+  <span class="theme-icon-light text-amber-600 dark:text-amber-400 text-sm leading-none flex items-center">
+    ☀️
+  </span>
+  <!-- Sepia Icon -->
+  <span class="theme-icon-sepia hidden text-amber-700 text-sm leading-none items-center">
+    📜
+  </span>
+  <!-- Dark Icon -->
+  <span class="theme-icon-dark hidden text-indigo-400 text-sm leading-none items-center">
+    🌙
+  </span>
+
+  <span class="theme-label hidden sm:inline font-medium text-paper-text dark:text-night-text select-none">
+    দিন
+  </span>
+</button>
+
+<script is:inline>
+  (() => {
+    // Avoid re-attaching listeners if already initialized in another component instance
+    if (window.__themeToggleInitialized) {
+      if (typeof window.__syncThemeUI === 'function') {
+        window.__syncThemeUI();
+      }
+      return;
+    }
+    window.__themeToggleInitialized = true;
+
+    const MODES = ['light', 'sepia', 'dark'];
+    const LABELS = {
+      bn: { light: 'দিন', sepia: 'সেপিয়া', dark: 'রাত' },
+      en: { light: 'Day', sepia: 'Sepia', dark: 'Night' }
+    };
+
+    function getCurrentTheme() {
+      if (document.documentElement.classList.contains('dark')) return 'dark';
+      if (document.documentElement.classList.contains('sepia')) return 'sepia';
+      return 'light';
+    }
+
+    function getCurrentLang() {
+      return localStorage.getItem('kherokhata_lang') || 'bn';
+    }
+
+    function applyTheme(mode) {
+      document.documentElement.classList.remove('dark', 'sepia');
+
+      if (mode === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else if (mode === 'sepia') {
+        document.documentElement.classList.add('sepia');
+      }
+
+      try {
+        localStorage.setItem('theme', mode);
+      } catch (e) {}
+
+      syncThemeUI(mode);
+    }
+
+    function syncThemeUI(mode) {
+      const currentMode = mode || getCurrentTheme();
+      const lang = getCurrentLang();
+      const langLabels = LABELS[lang] || LABELS.bn;
+      const labelText = langLabels[currentMode] || 'দিন';
+
+      // Update all light icons
+      document.querySelectorAll('.theme-icon-light').forEach((el) => {
+        el.classList.toggle('hidden', currentMode !== 'light');
+        el.classList.toggle('flex', currentMode === 'light');
+      });
+
+      // Update all sepia icons
+      document.querySelectorAll('.theme-icon-sepia').forEach((el) => {
+        el.classList.toggle('hidden', currentMode !== 'sepia');
+        el.classList.toggle('flex', currentMode === 'sepia');
+      });
+
+      // Update all dark icons
+      document.querySelectorAll('.theme-icon-dark').forEach((el) => {
+        el.classList.toggle('hidden', currentMode !== 'dark');
+        el.classList.toggle('flex', currentMode === 'dark');
+      });
+
+      // Update all labels
+      document.querySelectorAll('.theme-label').forEach((el) => {
+        el.textContent = labelText;
+      });
+    }
+
+    window.__syncThemeUI = syncThemeUI;
+    window.__applyTheme = applyTheme;
+
+    // Attach click listeners using event delegation on document for complete reliability
+    document.addEventListener('click', (e) => {
+      const targetBtn = e.target.closest('.theme-toggle-btn');
+      if (!targetBtn) return;
+
+      const current = getCurrentTheme();
+      const nextIndex = (MODES.indexOf(current) + 1) % MODES.length;
+      const nextMode = MODES[nextIndex];
+      applyTheme(nextMode);
+    });
+
+    // Initialize UI on load
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => syncThemeUI());
+    } else {
+      syncThemeUI();
+    }
+
+    // Listen for language changes to update theme label
+    window.addEventListener('kherokhata-lang-change', () => {
+      syncThemeUI();
+    });
+  })();
+</script>

@@ -1,0 +1,58 @@
+{
+  "packageId": "me.affanlabib.kherokhata",
+  "host": "affanlabib.me",
+  "name": "লাবীবের খেরোখাতা",
+  "launcherName": "খেরোখাতা",
+  "display": "standalone",
+  "themeColor": "#9A3412",
+  "themeColorDark": "#141416",
+  "navigationColor": "#FAF8F5",
+  "navigationColorDark": "#141416",
+  "backgroundColor": "#FAF8F5",
+  "enableNotifications": false,
+  "startUrl": "/",
+  "iconUrl": "https://affanlabib.me/icons/icon-512.png",
+  "maskableIconUrl": "https://affanlabib.me/icons/icon-maskable.png",
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [
+    {
+      "name": "চিন্তা",
+      "short_name": "চিন্তা",
+      "url": "/category/chinta",
+      "icon": "https://affanlabib.me/icons/icon-192.png"
+    },
+    {
+      "name": "পাঠালাপ",
+      "short_name": "পাঠালাপ",
+      "url": "/category/pathalap",
+      "icon": "https://affanlabib.me/icons/icon-192.png"
+    },
+    {
+      "name": "ইতিহাস",
+      "short_name": "ইতিহাস",
+      "url": "/category/itihas",
+      "icon": "https://affanlabib.me/icons/icon-192.png"
+    },
+    {
+      "name": "বই-আলোচনা",
+      "short_name": "বই-আলোচনা",
+      "url": "/category/boi-alochona",
+      "icon": "https://affanlabib.me/icons/icon-192.png"
+    }
+  ],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://affanlabib.me/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {
+    "locationDelegation": {
+      "enabled": false
+    },
+    "playBilling": {
+      "enabled": false
+    }
+  },
+  "alphaDependencies": {
+    "enabled": false
+  }
+}

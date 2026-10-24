@@ -1,318 +1,35 @@
 ---
 // src/pages/index.astro
-import Layout from '../layouts/Layout.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import AuthorHero from '../components/AuthorHero.astro';
+import SpotlightPost from '../components/SpotlightPost.astro';
 import PostCard from '../components/PostCard.astro';
-import QuoteSection from '../components/QuoteSection.astro';
-import ThemeAvatar from '../components/ThemeAvatar.astro';
-import { getAllPostsAsync, getCategoriesAsync } from '../lib/db';
-import author from '../data/author.json';
-import bookshelf from '../data/bookshelf.json';
+import QuoteBox from '../components/QuoteBox.astro';
+import { getCollection } from 'astro:content';
+import { toBengaliNumber, CATEGORY_MAP } from '../utils/helpers';
 
-export const prerender = false;
+const allPosts = await getCollection('posts');
+const sortedPosts = allPosts.sort(
+  (a, b) => new Date(b.data.publishedAt).getTime() - new Date(a.data.publishedAt).getTime()
+);
 
-// Global Edge CDN cache with background revalidation (delivers in 30ms, revalidates instantly)
-Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=86400, stale-while-revalidate=604800');
+// Pinned / Spotlight Post (e.g. Takhasus or first post)
+const spotlightPost = sortedPosts.find((p) => p.data.isPinned) || sortedPosts[0];
+// Remaining posts for grid
+const remainingPosts = sortedPosts.filter((p) => p.slug !== spotlightPost.slug);
 
-const [posts, categories] = await Promise.all([
-  getAllPostsAsync(),
-  getCategoriesAsync()
-]);
-
-// Feature post: always the latest published post by author
-const spotlightPost = posts[0] || {
-  slug: 'gazar-dinlipi',
-  title: 'গাযার দিনলিপি: ধ্বংসস্তূপের ভেতর দিয়ে হেঁটে যাওয়া',
-  category: 'chinta',
-  description: '',
-  publishedAt: '',
-  formattedDate: '',
-  tags: [],
-  wordCount: 200
-};
-const gridPosts = posts;
-
-// Dynamic category list with post counts
-const categoryCounts = categories.map((cat) => {
-  const count = posts.filter((p) => p.category === cat.id).length;
-  return {
-    ...cat,
-    count,
-    gridCount: count
-  };
-});
-
-const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
-function toBn(n: number) {
-  return n.toString().replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);
-}
+const categories = Object.keys(CATEGORY_MAP) as (keyof typeof CATEGORY_MAP)[];
 ---
 
-<Layout
-  title="আফফান লাবীব | লাবীবের খেরোখাতা - Affan Labib Official Website"
-  description="Affan Labib (আফফান লাবীব)-এর অফিসিয়াল ওয়েবসাইট ও সাহিত্য সাময়িকী 'লাবীবের খেরোখাতা' (Labib er Kherokhata)। চিন্তা, পাঠের আনন্দ, ইতিহাসচর্চা ও বই-আলোচনার সাহিত্য আঙিনা।"
-  showLoader={false}
->
-  <!-- 1. Author Bio & Introduction Card (Directly on Front Page - Author First) -->
-  <section id="author-intro-card" class="mb-14 relative group">
-    <div class="absolute -inset-1 rounded-3xl bg-gradient-to-r from-paper-accent/15 via-amber-500/15 to-purple-500/15 blur-xl opacity-50 group-hover:opacity-85 transition-opacity duration-500 pointer-events-none"></div>
-    <div class="relative overflow-hidden rounded-3xl border border-paper-border/90 dark:border-night-border/90 bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-xl p-6 sm:p-9 shadow-sm hover:shadow-md transition-all">
-      <div class="flex flex-col md:flex-row items-center md:items-start gap-6 sm:gap-8">
-        <!-- Author Branding Portrait Container (Theme-Adaptive Affan Labib) -->
-        <ThemeAvatar
-          class="w-28 h-28 sm:w-36 sm:h-36 rounded-2xl shadow-md ring-4 ring-paper-accent/25 dark:ring-night-accent/30 hover:scale-102 transition-transform duration-300"
-          alt="আফফান লাবীব"
-        />
+<BaseLayout>
+  <!-- 1. Hollywood Author Hero Card with Instant Photo Change Option -->
+  <AuthorHero />
 
-        <!-- Bio Content Details -->
-        <div class="space-y-3.5 text-center md:text-left flex-grow">
-          <div class="flex flex-wrap items-center justify-center md:justify-start gap-2">
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-sans font-semibold bg-paper-accent/10 dark:bg-night-accent/15 text-paper-accent dark:text-night-accent border border-paper-accent/20">
-              <span>✍️</span>
-              <span>লেখক ও চিন্তক পরিচিতি</span>
-            </span>
-            <span class="text-xs font-sans text-paper-muted dark:text-night-muted">
-              লাবীবের খেরোখাতা (Labib er Kherokhata) · Affan Labib
-            </span>
-          </div>
+  <!-- 2. Magazine Spotlight / Pinned Story -->
+  <SpotlightPost post={spotlightPost} />
 
-          <div>
-            <h2 class="text-2xl sm:text-3xl font-bold font-serif text-paper-text dark:text-night-text author-name-text">
-              {author.name} <span class="text-lg sm:text-xl font-sans font-normal text-paper-muted dark:text-night-muted">(Affan Labib)</span>
-            </h2>
-            <p class="text-xs sm:text-sm font-sans font-semibold text-paper-accent dark:text-night-accent mt-0.5">
-              <span class="author-edu-text">{author.education}</span> · <span class="text-paper-muted dark:text-night-muted font-normal author-tagline-text">{author.tagline}</span>
-            </p>
-          </div>
-
-          <p class="text-sm sm:text-base font-serif text-paper-text/90 dark:text-night-text/90 leading-relaxed author-shortbio-text max-w-2xl">
-            {author.bioShort}
-          </p>
-
-          <p class="text-xs sm:text-sm font-serif italic text-paper-muted dark:text-night-muted leading-relaxed line-clamp-2 max-w-2xl author-manifesto-text">
-            "{author.bioFull}"
-          </p>
-
-          <!-- Action Buttons Row -->
-          <div class="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-2">
-            <a
-              href="/about"
-              class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-paper-accent text-white font-sans text-xs sm:text-sm font-semibold hover:shadow-md hover:scale-102 active:scale-95 transition-all cursor-pointer"
-            >
-              <span>লেখক সম্পর্কে জানুন ও জীবনবৃত্তান্ত</span>
-              <span>↗</span>
-            </a>
-            <a
-              href={author.social.facebook}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center gap-1 px-3 py-2 rounded-xl border border-paper-border dark:border-night-border hover:border-blue-500 hover:text-blue-600 text-xs font-sans transition-colors"
-            >
-              <span>Facebook</span>
-              <span>↗</span>
-            </a>
-            <a
-              href={author.social.whatsapp}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center gap-1 px-3 py-2 rounded-xl border border-paper-border dark:border-night-border hover:border-emerald-500 hover:text-emerald-600 text-xs font-sans transition-colors"
-            >
-              <span>WhatsApp</span>
-              <span>↗</span>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 2. Featured Spotlight Post -->
-  <section id="spotlight-section" data-slug={spotlightPost.slug} class="mb-14 relative group">
-    <div class="absolute -inset-1 rounded-3xl bg-gradient-to-r from-amber-500/20 via-paper-accent/20 dark:via-night-accent/25 to-amber-600/20 blur-xl opacity-60 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
-    <div class="relative overflow-hidden rounded-3xl border border-amber-500/30 dark:border-amber-400/20 bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-2xl p-7 sm:p-10 shadow-lg group-hover:shadow-2xl transition-all duration-400">
-      <div class="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-amber-500/60 dark:via-amber-400/60 to-transparent"></div>
-
-      <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
-        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-sans font-bold bg-amber-500/15 dark:bg-amber-400/15 text-amber-900 dark:text-amber-200 border border-amber-500/30 dark:border-amber-400/30 shadow-2xs">
-          <span class="animate-spin-slow">✨</span>
-          <span>প্রধান নির্বাচিত রচনা</span>
-        </div>
-        <div class="flex items-center gap-2 text-xs font-sans text-paper-muted dark:text-night-muted">
-          <a href={`/#${spotlightPost.category}`} class="font-semibold text-paper-accent dark:text-night-accent hover:underline font-serif text-sm" id="spotlight-cat-name">
-            {categories.find((c) => c.id === spotlightPost.category)?.title || spotlightPost.category}
-          </a>
-          <span>·</span>
-          <time id="spotlight-date">{spotlightPost.formattedDate || spotlightPost.publishedAt}</time>
-          <span>·</span>
-          <span id="spotlight-read-time">{toBn(Math.max(1, Math.ceil((spotlightPost.wordCount || 200) / 100)))} মিনিটে পাঠ্য</span>
-        </div>
-      </div>
-
-      <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold font-serif text-paper-text dark:text-night-text group-hover:text-paper-accent dark:group-hover:text-night-accent transition-colors duration-300 leading-tight mb-4">
-        <a href={`/${spotlightPost.slug}`} class="block hover:underline">
-          {spotlightPost.title}
-        </a>
-      </h2>
-
-      <p class="text-base sm:text-lg text-paper-muted dark:text-night-muted font-serif leading-relaxed line-clamp-3 mb-7">
-        {spotlightPost.description}
-      </p>
-
-      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-6 border-t border-paper-border/70 dark:border-night-border/70">
-        <div class="flex items-center gap-3">
-          <img src={author.avatar} alt="আফফান লাবীব" class="author-avatar-img w-10 h-10 rounded-full object-cover ring-2 ring-paper-accent/30 shadow-sm" />
-          <div>
-            <span class="text-xs font-sans font-semibold text-paper-text dark:text-night-text block author-name-text">
-              {author.name}
-            </span>
-            <span class="text-[11px] font-sans text-paper-muted dark:text-night-muted author-edu-text">
-              {author.education}
-            </span>
-          </div>
-        </div>
-
-        <a
-          href={`/${spotlightPost.slug}`}
-          class="inline-flex items-center gap-2 px-6 py-3 min-h-[48px] rounded-2xl bg-gradient-to-r from-paper-accent to-orange-700 dark:from-night-accent dark:to-orange-600 text-white font-sans text-sm font-semibold hover:shadow-lg hover:shadow-paper-accent/25 hover:scale-102 active:scale-95 transition-all duration-300 cursor-pointer shadow-sm"
-        >
-          <span>সম্পূর্ণ রচনাটি পড়ুন</span>
-          <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-          </svg>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- 3. Front-Page Bookshelf Showcase & Live Counters Card -->
-  <section id="home-bookshelf-section" class="mb-14 relative group">
-    <div class="p-6 sm:p-8 rounded-3xl border border-paper-border/90 dark:border-night-border/90 bg-paper-surface/85 dark:bg-night-surface/85 backdrop-blur-xl shadow-xs space-y-6">
-      <!-- Section Header with Counters -->
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-paper-border/60 dark:border-night-border/60">
-        <div>
-          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-sans font-semibold bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/20 mb-1.5">
-            <span>📚</span>
-            <span>ব্যক্তিগত পাঠাগার ও বুকশেলফ</span>
-          </div>
-          <h2 class="text-2xl sm:text-3xl font-bold font-serif text-paper-text dark:text-night-text tracking-tight">
-            বইয়ের পাতা ও ভাবনার তোশক
-          </h2>
-          <p class="text-xs sm:text-sm text-paper-muted dark:text-night-muted font-sans mt-0.5">
-            পড়া শেষ হওয়া বইয়ের তালিকা এবং পরবর্তীতে পড়ার অপেক্ষায় থাকা উইশলিস্ট
-          </p>
-        </div>
-
-        <!-- Live Interactive Counters -->
-        <div class="flex items-center gap-3">
-          <div class="px-4 py-2.5 rounded-2xl bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/25 text-center min-w-[110px]">
-            <span class="block text-xs font-sans font-medium text-paper-muted dark:text-night-muted">📖 পড়া শেষ বই</span>
-            <span id="home-read-count" class="text-xl sm:text-2xl font-bold font-mono text-amber-700 dark:text-amber-400">
-              {toBn(bookshelf.readBooks.length)}টি
-            </span>
-          </div>
-
-          <div class="px-4 py-2.5 rounded-2xl bg-paper-accent/10 dark:bg-night-accent/15 border border-paper-accent/25 text-center min-w-[110px]">
-            <span class="block text-xs font-sans font-medium text-paper-muted dark:text-night-muted">🎯 পড়ার উইশলিস্ট</span>
-            <span id="home-wish-count" class="text-xl sm:text-2xl font-bold font-mono text-paper-accent dark:text-night-accent">
-              {toBn(bookshelf.wishlistBooks.length)}টি
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Preview Columns: Read vs Wishlist -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Col 1: Finished Books Preview -->
-        <div class="space-y-3">
-          <div class="flex items-center justify-between text-xs font-sans font-semibold text-paper-text dark:text-night-text">
-            <span class="flex items-center gap-1.5 text-amber-700 dark:text-amber-400">
-              <span>📖</span>
-              <span>সম্প্রতি পড়া শেষ হওয়া বই:</span>
-            </span>
-            <a href="/bookshelf" class="text-paper-muted hover:text-paper-accent transition-colors font-normal">
-              সব দেখুন ({toBn(bookshelf.readBooks.length)}) →
-            </a>
-          </div>
-
-          <div id="home-read-books-list" class="space-y-2.5">
-            {bookshelf.readBooks.slice(0, 2).map((book) => (
-              <div class="p-3.5 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-bg/60 dark:bg-night-bg/60 hover:border-amber-500/40 transition-colors">
-                <div class="flex items-start justify-between gap-2">
-                  <div>
-                    <h4 class="font-bold font-serif text-sm text-paper-text dark:text-night-text leading-snug">
-                      {book.title}
-                    </h4>
-                    <p class="text-xs font-sans text-paper-muted dark:text-night-muted mt-0.5">
-                      — {book.author} ({book.readYear})
-                    </p>
-                  </div>
-                  <span class="px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-300 font-mono text-xs font-bold shrink-0">
-                    ★ {book.rating}
-                  </span>
-                </div>
-                {book.review && (
-                  <p class="text-xs font-serif text-paper-muted dark:text-night-muted italic mt-2 line-clamp-2 pl-2 border-l-2 border-amber-500/40">
-                    "{book.review}"
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <!-- Col 2: Wishlist Preview -->
-        <div class="space-y-3">
-          <div class="flex items-center justify-between text-xs font-sans font-semibold text-paper-text dark:text-night-text">
-            <span class="flex items-center gap-1.5 text-paper-accent dark:text-night-accent">
-              <span>🎯</span>
-              <span>পড়ার অপেক্ষায় থাকা কিতাবমালা:</span>
-            </span>
-            <a href="/bookshelf" class="text-paper-muted hover:text-paper-accent transition-colors font-normal">
-              সব দেখুন ({toBn(bookshelf.wishlistBooks.length)}) →
-            </a>
-          </div>
-
-          <div id="home-wish-books-list" class="space-y-2.5">
-            {bookshelf.wishlistBooks.slice(0, 2).map((wish) => (
-              <div class="p-3.5 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-bg/60 dark:bg-night-bg/60 hover:border-paper-accent/40 transition-colors">
-                <div class="flex items-start justify-between gap-2">
-                  <div>
-                    <h4 class="font-bold font-serif text-sm text-paper-text dark:text-night-text leading-snug">
-                      {wish.title}
-                    </h4>
-                    <p class="text-xs font-sans text-paper-muted dark:text-night-muted mt-0.5">
-                      — {wish.author}
-                    </p>
-                  </div>
-                  <span class="px-2 py-0.5 rounded-md bg-paper-accent/15 text-paper-accent dark:text-night-accent font-sans text-[10px] font-semibold shrink-0">
-                    {wish.priority} অগ্রাধিকার
-                  </span>
-                </div>
-                {wish.note && (
-                  <p class="text-xs font-serif text-paper-muted dark:text-night-muted italic mt-2 line-clamp-2 pl-2 border-l-2 border-paper-accent/40">
-                    "{wish.note}"
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <!-- Action Button to Full Bookshelf -->
-      <div class="pt-2 text-center">
-        <a
-          href="/bookshelf"
-          class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-paper-surface dark:bg-night-surface border border-paper-border dark:border-night-border hover:border-paper-accent text-paper-text dark:text-night-text font-sans text-xs sm:text-sm font-semibold hover:shadow-md transition-all cursor-pointer"
-        >
-          <span>📚 সম্পূর্ণ পাঠাগার ও দুই-রুম বুকশেলফে প্রবেশ করুন</span>
-          <span>↗</span>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- 4. Category Filter & All Posts Grid -->
-  <section id="categories" class="mt-14 mb-16 scroll-mt-24">
+  <!-- 3. Interactive Category Filter & All Articles Stream -->
+  <section class="mt-14 mb-16">
     <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
       <div>
         <div class="inline-flex items-center gap-1.5 text-xs font-sans font-semibold text-paper-accent dark:text-night-accent uppercase tracking-wider mb-1">
@@ -324,478 +41,136 @@ function toBn(n: number) {
         </h2>
       </div>
 
-      <div id="visible-count-container" class="text-xs font-sans text-paper-muted dark:text-night-muted">
-        মোট <span id="visible-count" class="font-bold text-paper-accent dark:text-night-accent">{toBn(gridPosts.length)}</span> টি রচনা প্রদর্শিত হচ্ছে
+      <div class="text-xs font-sans text-paper-muted dark:text-night-muted">
+        মোট <span id="visible-count" class="font-bold text-paper-accent dark:text-night-accent">{toBengaliNumber(remainingPosts.length)}</span> টি রচনা প্রদর্শিত হচ্ছে
       </div>
     </div>
 
-    <!-- Filter Tabs (Pills) -->
+    <!-- Live Category Filter Tabs (Zero Reload Smooth Filter) -->
     <div class="flex items-center gap-2 overflow-x-auto pb-3 mb-8 no-scrollbar text-xs font-sans">
-      <button type="button" class="category-tab px-4 py-2 rounded-full font-medium transition-all duration-200 cursor-pointer whitespace-nowrap bg-paper-accent text-white shadow-xs" data-filter="all">
-        <span>সব রচনা</span> <span id="all-tab-count" class="ml-1 opacity-80">({toBn(gridPosts.length)})</span>
+      <button
+        type="button"
+        class="category-tab px-4 py-2 rounded-full font-medium transition-all duration-200 cursor-pointer whitespace-nowrap bg-paper-accent text-white shadow-xs"
+        data-filter="all"
+      >
+        <span>সব রচনা</span>
+        <span class="ml-1 opacity-80">({toBengaliNumber(remainingPosts.length)})</span>
       </button>
-      {categoryCounts.map((cat) => (
-        <button
-          type="button"
-          class="category-tab px-4 py-2 rounded-full font-medium transition-all duration-200 cursor-pointer whitespace-nowrap border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:border-paper-accent hover:text-paper-accent shadow-2xs"
-          data-filter={cat.id}
-        >
-          <span>{cat.title}</span> <span class="category-tab-count ml-1 text-[11px] opacity-75" data-cat-id={cat.id}>({toBn(cat.gridCount)})</span>
-        </button>
-      ))}
+
+      {categories.map((catKey) => {
+        const cat = CATEGORY_MAP[catKey];
+        const count = remainingPosts.filter((p) => p.data.category === catKey).length;
+        return (
+          <button
+            type="button"
+            class="category-tab px-4 py-2 rounded-full font-medium transition-all duration-200 cursor-pointer whitespace-nowrap border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:border-paper-accent hover:text-paper-accent shadow-2xs"
+            data-filter={catKey}
+          >
+            <span>{cat.label}</span>
+            <span class="ml-1 text-[11px] opacity-75">({toBengaliNumber(count)})</span>
+          </button>
+        );
+      })}
     </div>
 
     <!-- 2-Column Responsive Post Grid -->
     <div id="posts-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6 transition-opacity duration-300">
-      {gridPosts.map((post) => <PostCard post={post} />)}
+      {remainingPosts.map((post) => (
+        <PostCard post={post} />
+      ))}
     </div>
 
-    <div id="empty-filter-notice" class="hidden py-12 text-center text-paper-muted dark:text-night-muted font-serif">
-      এই বিভাগে কোনো রচনা পাওয়া যায়নি।
+    <!-- Empty Filter Notice (Hidden by default) -->
+    <div id="empty-filter-notice" class="hidden py-16 text-center rounded-3xl border border-dashed border-paper-border dark:border-night-border bg-paper-surface/40 dark:bg-night-surface/40 max-w-md mx-auto my-6 space-y-3">
+      <span class="text-4xl block">📜</span>
+      <h3 class="text-lg font-bold font-serif text-paper-text dark:text-night-text">
+        এই বিষয়ে লেখা প্রস্তুত হচ্ছে...
+      </h3>
+      <p class="text-xs font-serif text-paper-muted dark:text-night-muted leading-relaxed px-4">
+        খুব শীঘ্রই এই বিভাগে নতুন গবেষণা ও অনুবাদমূলক রচনা প্রকাশিত হবে।
+      </p>
     </div>
   </section>
 
-  <!-- 5. Interactive Literary Quote Carousel -->
-  <QuoteSection />
-</Layout>
+  <!-- 4. Featured Literary Quote Box -->
+  <QuoteBox />
+</BaseLayout>
 
 <script is:inline>
-  (() => {
-    // 1. Post filtering & Dynamic Client Hydration
-    const tabs = document.querySelectorAll('.category-tab');
-    const emptyNotice = document.getElementById('empty-filter-notice');
-    const visibleCount = document.getElementById('visible-count');
-    const grid = document.getElementById('posts-grid');
+  const tabs = document.querySelectorAll('.category-tab');
+  const postItems = document.querySelectorAll('.post-item');
+  const emptyNotice = document.getElementById('empty-filter-notice');
+  const visibleCount = document.getElementById('visible-count');
 
+  function toBnNum(num) {
     const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
-    function toBnNum(num) {
-      return num.toString().replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);
-    }
+    return num.toString().replace(/[0-9]/g, (d) => bnDigits[parseInt(d, 10)]);
+  }
 
-    function getDeletedSlugs() {
-      try {
-        return JSON.parse(localStorage.getItem('kherokhata_deleted_posts') || '[]');
-      } catch (e) {
-        return [];
-      }
-    }
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const filter = tab.getAttribute('data-filter');
 
-    let currentFilter = 'all';
-
-    function filterPosts(filter) {
-      if (typeof filter === 'string') {
-        currentFilter = filter;
-      } else {
-        filter = currentFilter;
-      }
-
-      const deleted = getDeletedSlugs();
-      let totalActive = 0;
-      let visible = 0;
-      const catCounts = {};
-
-      const currentItems = document.querySelectorAll('.post-item');
-      currentItems.forEach((item) => {
-        const itemCat = item.getAttribute('data-category');
-        const itemSlug = item.getAttribute('data-slug');
-        if (itemSlug && deleted.includes(itemSlug)) {
-          item.classList.add('hidden');
-          return;
-        }
-
-        totalActive++;
-        if (itemCat) {
-          catCounts[itemCat] = (catCounts[itemCat] || 0) + 1;
-        }
-
-        if (filter === 'all' || itemCat === filter) {
-          item.classList.remove('hidden');
-          visible++;
-        } else {
-          item.classList.add('hidden');
-        }
-      });
-
-      // Synchronize "সব রচনা" tab badge count dynamically
-      const allTabBadge = document.getElementById('all-tab-count');
-      if (allTabBadge) {
-        allTabBadge.innerText = `(${toBnNum(totalActive)})`;
-      }
-
-      // Synchronize each category tab badge count dynamically
-      document.querySelectorAll('.category-tab-count').forEach((badge) => {
-        const catId = badge.getAttribute('data-cat-id');
-        if (catId) {
-          badge.innerText = `(${toBnNum(catCounts[catId] || 0)})`;
-        }
-      });
-
-      // Synchronize header count text
-      const visibleCountContainer = document.getElementById('visible-count-container');
-      if (visibleCountContainer) {
-        if (filter === 'all') {
-          visibleCountContainer.innerHTML = `মোট <span id="visible-count" class="font-bold text-paper-accent dark:text-night-accent">${toBnNum(totalActive)}</span> টি রচনা প্রদর্শিত হচ্ছে`;
-        } else {
-          const catTab = document.querySelector(`.category-tab[data-filter="${filter}"] span:first-child`);
-          const catName = catTab ? catTab.innerText.trim() : filter;
-          visibleCountContainer.innerHTML = `মোট <span class="font-bold text-paper-accent dark:text-night-accent">${toBnNum(visible)}</span> টি রচনা প্রদর্শিত হচ্ছে <span class="opacity-75">(${catName} বিভাগ · সর্বমোট ${toBnNum(totalActive)} টির মধ্যে)</span>`;
-        }
-      } else if (visibleCount) {
-        visibleCount.innerText = toBnNum(visible);
-      }
-
-      if (emptyNotice) {
-        emptyNotice.classList.toggle('hidden', visible > 0);
-      }
-    }
-
-    function prefetchUrl(url) {
-      if (!url || document.querySelector(`link[rel="prefetch"][href="${url}"]`)) return;
-      const link = document.createElement('link');
-      link.rel = 'prefetch';
-      link.href = url;
-      document.head.appendChild(link);
-    }
-
-    function createPostCardElement(post) {
-      const categoryLabels = {
-        chinta: 'চিন্তা',
-        pathalap: 'পাঠালাপ',
-        itihas: 'ইতিহাস',
-        'boi-alochona': 'বই-আলোচনা',
-        onubad: 'অনুবাদ'
-      };
-      const catName = categoryLabels[post.category] || post.category;
-      const words = post.wordCount || (post.body ? post.body.trim().split(/\s+/).length : 200);
-      const readMins = Math.max(1, Math.ceil(words / 100));
-      const readMinsBn = toBnNum(readMins);
-
-      const article = document.createElement('article');
-      article.className = 'post-item group relative flex flex-col justify-between rounded-3xl border border-paper-border/90 dark:border-night-border/90 bg-paper-surface/85 dark:bg-night-surface/85 backdrop-blur-xl p-6 sm:p-7 shadow-xs hover:shadow-2xl hover:shadow-paper-accent/10 dark:hover:shadow-night-accent/15 md:hover:-translate-y-1.5 active:scale-[0.99] transition-all duration-300 overflow-hidden cursor-pointer';
-      article.setAttribute('data-category', post.category);
-      article.setAttribute('data-slug', post.slug);
-
-      const tagsHtml = (post.tags || []).slice(0, 2).map((t) => `
-        <span class="px-2.5 py-0.5 rounded-full bg-paper-border/50 dark:bg-night-border/50 text-paper-muted dark:text-night-muted text-[11px] font-sans">
-          #${t}
-        </span>
-      `).join('');
-
-      article.innerHTML = `
-        <div class="absolute -right-20 -top-20 w-48 h-48 rounded-full bg-paper-accent/5 dark:bg-night-accent/10 blur-2xl group-hover:scale-150 group-hover:bg-paper-accent/12 dark:group-hover:bg-night-accent/20 transition-all duration-700 pointer-events-none"></div>
-        <div class="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-paper-accent/30 dark:via-night-accent/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-        <div class="relative space-y-4">
-          <div class="flex items-center justify-between text-xs font-sans text-paper-muted dark:text-night-muted relative z-20">
-            <a href="/#${post.category}" data-category-filter="${post.category}" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-serif font-medium bg-paper-accent/10 dark:bg-night-accent/10 text-paper-accent dark:text-night-accent border border-paper-accent/20 dark:border-night-accent/20 shadow-2xs group-hover:scale-105 transition-transform duration-300">
-              <span class="w-1.5 h-1.5 rounded-full bg-paper-accent dark:bg-night-accent animate-pulse"></span>
-              ${catName}
-            </a>
-            <div class="flex items-center gap-2 font-sans text-[11px] sm:text-xs">
-              <time class="opacity-80">${post.formattedDate || post.publishedAt}</time>
-              <span>·</span>
-              <span class="opacity-80">${readMinsBn} মিনিটে পাঠ্য</span>
-            </div>
-          </div>
-          <h3 class="text-xl sm:text-2xl font-bold font-serif text-paper-text dark:text-night-text group-hover:text-paper-accent dark:group-hover:text-night-accent transition-colors duration-300 leading-snug">
-            <a href="/${post.slug}" class="hover:underline focus:outline-none z-20 relative block">
-              ${post.title}
-            </a>
-          </h3>
-          <p class="text-sm sm:text-base text-paper-muted dark:text-night-muted font-serif leading-relaxed line-clamp-3">
-            ${post.description || ''}
-          </p>
-        </div>
-        <div class="relative mt-6 pt-4 border-t border-paper-border/60 dark:border-night-border/60 flex items-center justify-between text-xs font-sans gap-3">
-          <div class="flex flex-wrap gap-1.5 z-10 relative">
-            ${tagsHtml}
-          </div>
-          <a
-            href="/${post.slug}"
-            class="inline-flex items-center gap-1.5 px-4 py-2 min-h-[44px] rounded-full bg-paper-accent text-white dark:bg-night-accent dark:text-stone-900 font-semibold text-xs font-sans hover:opacity-95 active:scale-95 shadow-xs transition-all duration-200 z-20 relative cursor-pointer"
-            aria-label="${post.title} রচনাটি পড়ুন"
-          >
-            <span class="font-sans font-medium">পড়ুন</span>
-            <svg class="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-            </svg>
-          </a>
-        </div>
-      `;
-
-      const cardUrl = `/${post.slug}`;
-      article.addEventListener('pointerenter', () => prefetchUrl(cardUrl), { passive: true });
-      article.addEventListener('touchstart', () => prefetchUrl(cardUrl), { passive: true });
-      article.addEventListener('click', (e) => {
-        if (e.target.closest('a')) return;
-        window.location.href = cardUrl;
-      });
-
-      return article;
-    }
-
-    function syncCustomPosts() {
-      if (!grid) return;
-      const deleted = getDeletedSlugs();
-      let custom = [];
-      try {
-        custom = JSON.parse(localStorage.getItem('kherokhata_custom_posts') || '[]');
-      } catch (e) {}
-
-      custom.forEach((post) => {
-        if (deleted.includes(post.slug)) return;
-        const exists = document.querySelector(`[data-slug="${post.slug}"]`);
-        if (!exists) {
-          const card = createPostCardElement(post);
-          grid.prepend(card);
-        }
-      });
-
-      filterPosts(currentFilter);
-    }
-
-    async function fetchServerPosts() {
-      try {
-        const res = await fetch('/api/posts?t=' + Date.now(), { cache: 'no-store' });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (data && Array.isArray(data.posts) && grid) {
-          const deleted = getDeletedSlugs();
-          let custom = JSON.parse(localStorage.getItem('kherokhata_custom_posts') || '[]');
-          const serverSlugs = data.posts.map((p) => p.slug);
-
-          // 1. Remove cards that were deleted on the server or in deleted list
-          document.querySelectorAll('.post-item').forEach((card) => {
-            const slug = card.getAttribute('data-slug');
-            if (slug && (!serverSlugs.includes(slug) || deleted.includes(slug))) {
-              card.remove();
-            }
-          });
-
-          const validPosts = data.posts.filter((p) => !deleted.includes(p.slug));
-
-          // 2. Update top spotlight hero dynamically if latest post changed
-          if (validPosts.length > 0) {
-            const latest = validPosts[0];
-            const spotSection = document.getElementById('spotlight-section');
-            if (spotSection) {
-              const currentSpotSlug = spotSection.getAttribute('data-slug');
-              if (currentSpotSlug !== latest.slug || !serverSlugs.includes(currentSpotSlug) || deleted.includes(currentSpotSlug)) {
-                spotSection.setAttribute('data-slug', latest.slug);
-                const titleLink = spotSection.querySelector('h2 a');
-                if (titleLink) {
-                  titleLink.textContent = latest.title;
-                  titleLink.setAttribute('href', '/' + latest.slug);
-                }
-                const descP = spotSection.querySelector('p.text-base');
-                if (descP) descP.textContent = latest.description || '';
-                const readBtn = spotSection.querySelector('a.min-h-\\[48px\\]');
-                if (readBtn) readBtn.setAttribute('href', '/' + latest.slug);
-                const dateEl = document.getElementById('spotlight-date');
-                if (dateEl) dateEl.textContent = latest.formattedDate || latest.publishedAt;
-                const catLink = document.getElementById('spotlight-cat-name');
-                if (catLink) {
-                  catLink.textContent = latest.category;
-                  catLink.setAttribute('href', '/#' + latest.category);
-                }
-              }
-            }
-          }
-
-          // 3. Ensure every active post has a card in the grid
-          validPosts.forEach((post) => {
-            const exists = grid.querySelector(`[data-slug="${post.slug}"]`);
-            if (!exists) {
-              const card = createPostCardElement(post);
-              grid.prepend(card);
-              if (!custom.some((p) => p.slug === post.slug)) {
-                custom.unshift(post);
-              }
-            }
-          });
-          localStorage.setItem('kherokhata_custom_posts', JSON.stringify(custom));
-          filterPosts(currentFilter);
-        }
-      } catch (e) {}
-    }
-
-    // Hydrate local and cloud posts immediately with zero latency
-    syncCustomPosts();
-    fetchServerPosts();
-
-    window.addEventListener('kherokhata-posts-sync', () => {
-      syncCustomPosts();
-      fetchServerPosts();
-    });
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'kherokhata_custom_posts' || e.key === 'kherokhata_deleted_posts') {
-        syncCustomPosts();
-        fetchServerPosts();
-      }
-    });
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        syncCustomPosts();
-        fetchServerPosts();
-      }
-    });
-    window.addEventListener('focus', () => {
-      syncCustomPosts();
-      fetchServerPosts();
-    });
-
-    function activateTab(filter, shouldScroll = false) {
-      const targetTab = document.querySelector(`.category-tab[data-filter="${filter}"]`) || document.querySelector('.category-tab[data-filter="all"]');
-      if (!targetTab) return;
-
+      // Update active tab styles
       tabs.forEach((t) => {
         t.classList.remove('bg-paper-accent', 'text-white', 'shadow-xs');
-        t.classList.add('border', 'border-paper-border', 'dark:border-night-border', 'bg-paper-surface/60', 'dark:bg-night-surface/60', 'text-paper-muted', 'dark:text-night-muted');
+        t.classList.add(
+          'border',
+          'border-paper-border',
+          'dark:border-night-border',
+          'bg-paper-surface/60',
+          'dark:bg-night-surface/60',
+          'text-paper-muted',
+          'dark:text-night-muted'
+        );
       });
 
-      targetTab.classList.remove('border', 'border-paper-border', 'dark:border-night-border', 'bg-paper-surface/60', 'dark:bg-night-surface/60', 'text-paper-muted', 'dark:text-night-muted');
-      targetTab.classList.add('bg-paper-accent', 'text-white', 'shadow-xs');
+      tab.classList.remove(
+        'border',
+        'border-paper-border',
+        'dark:border-night-border',
+        'bg-paper-surface/60',
+        'dark:bg-night-surface/60',
+        'text-paper-muted',
+        'dark:text-night-muted'
+      );
+      tab.classList.add('bg-paper-accent', 'text-white', 'shadow-xs');
 
+      // Silky smooth transition
       const grid = document.getElementById('posts-grid');
-      if (grid) grid.classList.add('opacity-40');
+      if (grid) {
+        grid.classList.add('opacity-40', 'scale-[0.99]');
+      }
 
       setTimeout(() => {
-        filterPosts(targetTab.getAttribute('data-filter') || 'all');
-        if (grid) grid.classList.remove('opacity-40');
-      }, 70);
-
-      if (shouldScroll) {
-        const sec = document.getElementById('categories');
-        if (sec) sec.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
-
-    // Run filter immediately to hide any deleted posts on page boot
-    filterPosts('all');
-    window.addEventListener('kherokhata-posts-sync', () => filterPosts(currentFilter));
-
-    tabs.forEach((tab) => {
-      tab.addEventListener('click', () => {
-        const filter = tab.getAttribute('data-filter') || 'all';
-        activateTab(filter, false);
-        try {
-          if (filter !== 'all') {
-            history.replaceState(null, '', `#${filter}`);
+        // Filter post cards
+        let visible = 0;
+        postItems.forEach((item) => {
+          const itemCat = item.getAttribute('data-category');
+          if (filter === 'all' || itemCat === filter) {
+            item.classList.remove('hidden');
+            visible++;
           } else {
-            history.replaceState(null, '', window.location.pathname);
+            item.classList.add('hidden');
           }
-        } catch (e) {}
-      });
-    });
+        });
 
-    // Check URL hash for direct category deep-linking
-    function checkUrlFilter() {
-      const hash = window.location.hash.replace('#', '');
-      if (hash && hash !== 'categories') {
-        const matchingTab = document.querySelector(`.category-tab[data-filter="${hash}"]`);
-        if (matchingTab) {
-          activateTab(hash, true);
+        if (visibleCount) {
+          visibleCount.innerText = toBnNum(visible);
         }
-      } else if (hash === 'categories') {
-        const sec = document.getElementById('categories');
-        if (sec) sec.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
 
-    checkUrlFilter();
-    window.addEventListener('hashchange', checkUrlFilter);
-
-    // 2. Hide any deleted spotlight post
-    const spotlightSection = document.getElementById('spotlight-section');
-    function syncSpotlight() {
-      if (spotlightSection) {
-        const slug = spotlightSection.getAttribute('data-slug');
-        if (slug && getDeletedSlugs().includes(slug)) {
-          spotlightSection.classList.add('hidden');
-        }
-      }
-    }
-    syncSpotlight();
-    window.addEventListener('kherokhata-posts-sync', syncSpotlight);
-
-    // 3. Bookshelf Live Counters Sync
-    function syncHomeBookshelf() {
-      const stored = localStorage.getItem('kherokhata_bookshelf_custom');
-      if (!stored) return;
-      try {
-        const data = JSON.parse(stored);
-        const readEl = document.getElementById('home-read-count');
-        const wishEl = document.getElementById('home-wish-count');
-        if (readEl && data.readBooks) readEl.innerText = `${toBnNum(data.readBooks.length)}টি`;
-        if (wishEl && data.wishlistBooks) wishEl.innerText = `${toBnNum(data.wishlistBooks.length)}টি`;
-      } catch (e) {}
-    }
-
-    // 4. Instant Card Tap Navigation & Touch/Hover Prefetching
-    document.querySelectorAll('.post-item').forEach((card) => {
-      const slug = card.getAttribute('data-slug');
-      if (slug) {
-        const url = `/${slug}`;
-        card.addEventListener('pointerenter', () => prefetchUrl(url), { passive: true });
-        card.addEventListener('touchstart', () => prefetchUrl(url), { passive: true });
-      }
-
-      card.addEventListener('click', (e) => {
-        // If clicked on any anchor link (like category filter, title link, or "পড়ুন" button), let the native link navigate cleanly
-        if (e.target.closest('a')) return;
-        if (slug) {
-          window.location.href = `/${slug}`;
-        }
-      });
-    });
-
-    const spotCard = document.getElementById('spotlight-section');
-    if (spotCard) {
-      const slug = spotCard.getAttribute('data-slug');
-      if (slug) {
-        const url = `/${slug}`;
-        spotCard.addEventListener('pointerenter', () => prefetchUrl(url), { passive: true });
-        spotCard.addEventListener('touchstart', () => prefetchUrl(url), { passive: true });
-      }
-      spotCard.addEventListener('click', (e) => {
-        if (e.target.closest('a')) return;
-        if (slug) {
-          window.location.href = `/${slug}`;
-        }
-      });
-    }
-
-    // 5. Background Idle Cache Warmer for 100% Offline Article Reading
-    if ('caches' in window && 'serviceWorker' in navigator) {
-      const warmOfflineCache = async () => {
-        try {
-          if (!navigator.onLine) return;
-          const cacheKeys = await caches.keys();
-          const activeKey = cacheKeys.find((k) => k.startsWith('kherokhata-cache')) || 'kherokhata-cache-v25';
-          const cache = await caches.open(activeKey);
-          const slugs = Array.from(document.querySelectorAll('[data-slug]'))
-            .map((el) => el.getAttribute('data-slug'))
-            .filter(Boolean);
-          const uniqueSlugs = [...new Set(slugs)];
-
-          for (const s of uniqueSlugs) {
-            const articleUrl = '/' + s;
-            const hasMatch = await cache.match(articleUrl);
-            if (!hasMatch) {
-              fetch(articleUrl)
-                .then((r) => {
-                  if (r.status === 200) cache.put(articleUrl, r);
-                })
-                .catch(() => {});
-            }
+        if (emptyNotice) {
+          if (visible === 0) {
+            emptyNotice.classList.remove('hidden');
+          } else {
+            emptyNotice.classList.add('hidden');
           }
-        } catch (e) {}
-      };
+        }
 
-      if ('requestIdleCallback' in window) {
-        window.requestIdleCallback(() => warmOfflineCache(), { timeout: 3000 });
-      } else {
-        setTimeout(warmOfflineCache, 1800);
-      }
-    }
-  })();
+        if (grid) {
+          grid.classList.remove('opacity-40', 'scale-[0.99]');
+        }
+      }, 120);
+    });
+  });
 </script>

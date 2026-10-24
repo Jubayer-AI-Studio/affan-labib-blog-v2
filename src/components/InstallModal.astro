@@ -2,6 +2,7 @@
 // src/components/InstallModal.astro
 ---
 
+<!-- Ultra-Reliable Universal PWA Install Modal -->
 <div
   id="install-modal"
   class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm hidden"
@@ -23,15 +24,17 @@
     </div>
 
     <div class="space-y-1.5">
-      <h3 class="text-xl font-bold font-serif text-paper-text dark:text-night-text">
+      <h3 id="pwa-modal-title" class="text-xl font-bold font-serif text-paper-text dark:text-night-text">
         লাবীবের খেরোখাতা অ্যাপ
       </h3>
-      <p class="text-xs text-paper-muted dark:text-night-muted font-sans">
+      <p id="pwa-modal-desc" class="text-xs text-paper-muted dark:text-night-muted font-sans">
         মোবাইলে ইনস্টল করে সম্পূর্ণ অফলাইনে কোনো নেট ছাড়াই পড়ুন
       </p>
     </div>
 
+    <!-- Main Install Action Section -->
     <div class="space-y-3 font-sans">
+      <!-- 1-Click Install Button -->
       <button
         id="pwa-install-btn"
         type="button"
@@ -41,18 +44,19 @@
         <span id="pwa-btn-text">অ্যাপটি ইনস্টল করুন</span>
       </button>
 
+      <!-- Already Installed Badge (Hidden by default) -->
       <div id="pwa-installed-box" class="hidden p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 text-xs font-medium space-y-1">
         <p class="font-bold flex items-center justify-center gap-1.5">
-          <span>✓</span>
-          <span>অ্যাপটি ইনস্টল করা রয়েছে!</span>
+          <span>✓</span> <span>অ্যাপটি ইনস্টল করা রয়েছে!</span>
         </p>
         <p class="text-[11px] opacity-90">আপনি যেকোনো সময় হোমস্ক্রিন বা অ্যাপ মেনু থেকে অফলাইনে পড়তে পারবেন।</p>
       </div>
 
+      <!-- Device-Specific Interactive Guides -->
+      <!-- iOS / Safari Guide -->
       <div id="ios-guide-box" class="hidden text-left text-xs bg-amber-500/10 dark:bg-amber-400/10 border border-amber-500/25 p-3.5 rounded-xl space-y-2 text-paper-text dark:text-night-text">
         <div class="font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
-          <span>🍏</span>
-          <span>আইফোনে (iPhone/Safari) যেভাবে ইনস্টল করবেন:</span>
+          <span>🍏</span> <span>আইফোনে (iPhone/Safari) যেভাবে ইনস্টল করবেন:</span>
         </div>
         <ol class="text-[11px] leading-relaxed list-decimal list-inside space-y-1 text-paper-muted dark:text-night-muted">
           <li>সাফারি ব্রাউজারের নিচে <strong>শেয়ার 📤 (Share)</strong> বাটনে চাপ দিন।</li>
@@ -61,37 +65,31 @@
         </ol>
       </div>
 
-      <div id="inapp-guide-box" class="hidden text-left text-xs bg-amber-500/15 border border-amber-500/30 p-3.5 rounded-xl space-y-1.5 text-paper-text dark:text-night-text">
-        <div class="font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
-          <span>⚠️</span>
-          <span>হোয়াটসঅ্যাপ/মেসেঞ্জারে আছেন?</span>
-        </div>
-        <p class="text-[11px] leading-relaxed text-paper-muted dark:text-night-muted">
-          অ্যাপ সরাসরি ইনস্টল করতে উপরের ৩-ডটে (⋮) চাপ দিয়ে <strong>"Open in Chrome" (ক্রোমে খুলুন)</strong> বেছে নিন। এরপর ইনস্টল বাটনে ট্যাপ করলেই অ্যাপ নেমে যাবে।
-        </p>
-      </div>
-
+      <!-- Android / Chrome Fallback Guide -->
       <div id="android-guide-box" class="text-left text-xs bg-paper-border/30 dark:bg-night-border/40 p-3.5 rounded-xl space-y-1.5 text-paper-muted dark:text-night-muted">
         <div class="font-semibold text-paper-text dark:text-night-text flex items-center gap-1.5">
-          <span>💡</span>
-          <span>সহজ ইনস্টল নির্দেশিকা:</span>
+          <span>💡</span> <span>সহজ ইনস্টল নির্দেশিকা:</span>
         </div>
         <p class="text-[11px] leading-relaxed">
-          • <strong>অ্যান্ড্রয়েড (Chrome):</strong> উপরের বাটনে চাপ দিন। কোনো কারণে পপআপ না এলে ব্রাউজারের উপরে ৩-ডটে (⋮) গিয়ে <strong>"Install app"</strong> অথবা <strong>"Add to Home screen"</strong> চাপুন।<br />
-          • <strong>আইফোন (Safari):</strong> ব্রাউজারের শেয়ার (Share 📤) আইকন থেকে <strong>"Add to Home Screen"</strong> বেছে নিন।
+          • <strong>অ্যান্ড্রয়েড (Chrome):</strong> উপরের বাটনে চাপ দিন। কোনো কারণে পপআপ না এলে ব্রাউজারের উপরে ৩-ডটে (⋮) গিয়ে <strong>"Install app"</strong> অথবা <strong>"Add to Home screen"</strong> চাপুন।<br/>
+          • <strong>আইফোন (Safari):</strong> নিচের শেয়ার 📤 আইকনে চাপ দিয়ে <strong>"Add to Home Screen"</strong> চাপুন।
         </p>
       </div>
 
-      <div class="pt-2 border-t border-paper-border/50 dark:border-night-border/50">
-        <button
-          id="copy-app-link-btn"
-          type="button"
-          class="w-full py-2 px-3 rounded-lg border border-paper-border/80 dark:border-night-border/80 text-paper-muted dark:text-night-muted hover:text-paper-text text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-        >
-          <span>🔗</span>
-          <span id="copy-btn-text">অ্যাপের লিঙ্ক কপি করুন</span>
-        </button>
-      </div>
+      <!-- Copy Link Utility -->
+      <button
+        id="copy-app-link-btn"
+        type="button"
+        class="w-full py-2 px-3 rounded-lg border border-paper-border dark:border-night-border bg-paper-bg/60 dark:bg-night-bg/60 text-paper-muted dark:text-night-muted hover:text-paper-text dark:hover:text-night-text text-xs font-medium hover:border-paper-accent transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+      >
+        <span>🔗</span>
+        <span id="copy-btn-text">অ্যাপের স্থায়ী লিংক কপি করুন</span>
+      </button>
+
+      <!-- Feedback Toast -->
+      <p id="install-toast" class="hidden text-[11px] font-sans font-medium text-emerald-600 dark:text-emerald-400">
+        ✓ লিংক ক্লিপবোর্ডে কপি হয়েছে!
+      </p>
     </div>
   </div>
 </div>
@@ -99,80 +97,141 @@
 <script is:inline>
   (() => {
     let deferredPrompt = null;
-    const modal = document.getElementById('install-modal');
+    const installModal = document.getElementById('install-modal');
     const closeBtn = document.getElementById('close-install-modal');
-    const installBtn = document.getElementById('pwa-install-btn');
-    const btnText = document.getElementById('pwa-btn-text');
+    const pwaBtn = document.getElementById('pwa-install-btn');
+    const pwaBtnText = document.getElementById('pwa-btn-text');
     const installedBox = document.getElementById('pwa-installed-box');
-    const iosBox = document.getElementById('ios-guide-box');
-    const androidBox = document.getElementById('android-guide-box');
+    const iosGuideBox = document.getElementById('ios-guide-box');
+    const androidGuideBox = document.getElementById('android-guide-box');
     const copyBtn = document.getElementById('copy-app-link-btn');
-    const copyText = document.getElementById('copy-btn-text');
+    const copyBtnText = document.getElementById('copy-btn-text');
+    const installToast = document.getElementById('install-toast');
 
+    // Detect environment
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    const isInApp = /FB_IAB|FBAV|WhatsApp|Instagram|Line|Messenger/i.test(navigator.userAgent);
-    const inappBox = document.getElementById('inapp-guide-box');
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
-    function updateState() {
+    function updateUIState() {
       if (isStandalone) {
-        if (installBtn) installBtn.classList.add('hidden');
+        if (pwaBtn) pwaBtn.classList.add('hidden');
         if (installedBox) installedBox.classList.remove('hidden');
-        if (androidBox) androidBox.classList.add('hidden');
-        if (iosBox) iosBox.classList.add('hidden');
-        if (inappBox) inappBox.classList.add('hidden');
+        if (androidGuideBox) androidGuideBox.classList.add('hidden');
+        if (iosGuideBox) iosGuideBox.classList.add('hidden');
         return;
       }
-      if (isInApp) {
-        if (inappBox) inappBox.classList.remove('hidden');
-        if (btnText) btnText.innerText = 'ক্রোম ব্রাউজারে খুলুন';
-      }
+
       if (isIOS) {
-        if (iosBox) iosBox.classList.remove('hidden');
-        if (androidBox) androidBox.classList.add('hidden');
-        if (btnText && !isInApp) btnText.innerText = 'আইফোনে ইনস্টল নির্দেশিকা';
+        if (iosGuideBox) iosGuideBox.classList.remove('hidden');
+        if (androidGuideBox) androidGuideBox.classList.add('hidden');
+        if (pwaBtnText) pwaBtnText.innerText = 'আইফোনে ইনস্টল নির্দেশিকা দেখুন';
+      } else {
+        if (iosGuideBox) iosGuideBox.classList.add('hidden');
+        if (androidGuideBox) androidGuideBox.classList.remove('hidden');
+        if (deferredPrompt && pwaBtnText) {
+          pwaBtnText.innerText = 'সরাসরি ইনস্টল করুন (১-ক্লিক)';
+        }
       }
     }
 
+    // Capture beforeinstallprompt
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
-      if (btnText && !isStandalone) btnText.innerText = 'এখনই ইনস্টল করুন';
+      if (pwaBtnText && !isStandalone) {
+        pwaBtnText.innerText = 'সরাসরি ইনস্টল করুন (১-ক্লিক)';
+      }
     });
 
-    window.openInstallModal = () => {
-      updateState();
-      modal?.classList.remove('hidden');
-    };
-
-    closeBtn?.addEventListener('click', () => modal?.classList.add('hidden'));
-    modal?.addEventListener('click', (e) => {
-      if (e.target === modal) modal.classList.add('hidden');
+    // App installed event
+    window.addEventListener('appinstalled', () => {
+      deferredPrompt = null;
+      if (pwaBtn) pwaBtn.classList.add('hidden');
+      if (installedBox) installedBox.classList.remove('hidden');
+      setTimeout(() => {
+        installModal?.classList.add('hidden');
+      }, 2500);
     });
 
-    installBtn?.addEventListener('click', async () => {
-      if (isInApp) {
-        alert('হোয়াটসঅ্যাপ বা মেসেঞ্জারে সরাসরি অ্যাপ ইনস্টল করা যায় না।\n\nঅনুগ্রহ করে স্ক্রিনের উপরে ডানদিকের ৩-ডট (⋮) চাপ দিয়ে "Open in Chrome" (ক্রোমে খুলুন) সিলেক্ট করুন, এরপর অ্যাপটি ইনস্টল করুন।');
+    async function handleInstallAction() {
+      if (isStandalone) {
         return;
       }
+
       if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') modal?.classList.add('hidden');
-        deferredPrompt = null;
+        // Native prompt is ready
+        try {
+          deferredPrompt.prompt();
+          const choice = await deferredPrompt.userChoice;
+          if (choice.outcome === 'accepted') {
+            installModal?.classList.add('hidden');
+          }
+          deferredPrompt = null;
+        } catch (err) {
+          console.error('[PWA Prompt Error]', err);
+        }
       } else if (isIOS) {
-        alert('সাফারি ব্রাউজারের নিচে শেয়ার বাটনে (Share 📤) চাপ দিয়ে "Add to Home Screen" বেছে নিন।');
+        // On iOS, pulse the guide
+        iosGuideBox?.classList.remove('hidden');
+        iosGuideBox?.scrollIntoView({ behavior: 'smooth' });
+        iosGuideBox?.classList.add('ring-2', 'ring-amber-500');
+        setTimeout(() => {
+          iosGuideBox?.classList.remove('ring-2', 'ring-amber-500');
+        }, 1500);
       } else {
-        alert('ব্রাউজারের ৩-ডট মেনু (⋮) থেকে "Install app" অথবা "Add to Home screen" চাপুন।');
+        // On Android/Desktop without active prompt event
+        if (androidGuideBox) {
+          androidGuideBox.classList.remove('hidden');
+          androidGuideBox.classList.add('ring-2', 'ring-paper-accent');
+          if (pwaBtnText) {
+            pwaBtnText.innerText = 'মেনুর ৩-ডট (⋮) থেকে ইনস্টল চাপুন';
+          }
+          setTimeout(() => {
+            androidGuideBox.classList.remove('ring-2', 'ring-paper-accent');
+          }, 2000);
+        }
+      }
+    }
+
+    pwaBtn?.addEventListener('click', handleInstallAction);
+
+    // Global trigger function called by buttons
+    window.openInstallModal = () => {
+      updateUIState();
+      installModal?.classList.remove('hidden');
+      // If prompt is ready, trigger immediately when called from header button
+      if (deferredPrompt && !isIOS && !isStandalone) {
+        handleInstallAction();
+      }
+    };
+
+    // Copy link helper
+    copyBtn?.addEventListener('click', async () => {
+      const url = window.location.origin || 'https://affan-labib-blog.vercel.app';
+      try {
+        await navigator.clipboard.writeText(url);
+        if (copyBtnText) copyBtnText.innerText = '✓ লিংক কপি হয়েছে!';
+        if (installToast) installToast.classList.remove('hidden');
+        setTimeout(() => {
+          if (copyBtnText) copyBtnText.innerText = 'অ্যাপের স্থায়ী লিংক কপি করুন';
+          if (installToast) installToast.classList.add('hidden');
+        }, 2500);
+      } catch (e) {
+        prompt('অ্যাপের লিংকটি কপি করুন:', url);
       }
     });
 
-    copyBtn?.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(window.location.origin);
-        if (copyText) copyText.innerText = '✓ লিঙ্ক কপি হয়েছে!';
-        setTimeout(() => { if (copyText) copyText.innerText = 'অ্যাপের লিঙ্ক কপি করুন'; }, 2500);
-      } catch (e) {}
+    closeBtn?.addEventListener('click', () => {
+      installModal?.classList.add('hidden');
     });
+
+    installModal?.addEventListener('click', (e) => {
+      if (e.target === installModal) {
+        installModal.classList.add('hidden');
+      }
+    });
+
+    // Run initial state check
+    updateUIState();
   })();
 </script>

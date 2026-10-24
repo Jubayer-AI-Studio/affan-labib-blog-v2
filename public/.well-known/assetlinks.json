@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "me.affanlabib.kherokhata",
+      "sha256_cert_fingerprints": [
+        "14:6D:E9:7F:0F:7B:66:B9:65:2F:E9:1E:57:3E:96:4F:9E:0D:37:A2:81:4B:9B:44:8D:DE:8E:25:FB:C0:02:D5"
+      ]
+    }
+  }
+]

@@ -1,50 +1,26 @@
 ---
-// src/components/Header.astro
+// Header.astro
+import ThemeToggle from './ThemeToggle.astro';
+import LanguageToggle from './LanguageToggle.astro';
+import InstallModal from './InstallModal.astro';
+import LiveClock from './LiveClock.astro';
+
+const navLinks = [
+  { href: '/category/chinta', label: 'চিন্তা', key: 'nav_chinta' },
+  { href: '/category/pathalap', label: 'পাঠালাপ', key: 'nav_pathalap' },
+  { href: '/category/itihas', label: 'ইতিহাস', key: 'nav_itihas' },
+  { href: '/category/boi-alochona', label: 'বই-আলোচনা', key: 'nav_boi' },
+  { href: '/bookshelf', label: 'বুকশেলফ', key: 'nav_bookshelf' },
+  { href: '/about', label: 'আমার সম্পর্কে', key: 'nav_about' },
+];
+
+const currentPath = Astro.url.pathname;
 ---
 
 <header class="border-b border-paper-border/80 dark:border-night-border/80 bg-paper-bg/80 dark:bg-night-bg/80 backdrop-blur-xl sticky top-0 z-40 transition-colors shadow-2xs">
-  <!-- Ultra-Luxe Live Date & Ticking Seconds Chronometer (Restored as designed by User) -->
-  <div class="w-full pt-2 pb-1 px-3 sm:px-6">
-    <div class="relative group max-w-5xl mx-auto">
-      <!-- Gemini Cosmic Ambient Liquid Glow (Cyan, Indigo, Purple, Pink, Amber) -->
-      <div class="absolute -inset-1 rounded-2xl bg-gradient-to-r from-blue-500/25 via-purple-500/25 via-pink-500/25 to-amber-500/25 blur-lg opacity-75 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" aria-hidden="true"></div>
+  <!-- Ultra-Luxe Live Date & Ticking Seconds Chronometer -->
+  <LiveClock />
 
-      <!-- Radiant Multi-Color Gradient Border Container -->
-      <div class="relative p-[1.5px] sm:p-[2px] rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 via-purple-600 via-pink-500 to-amber-500 shadow-md shadow-purple-500/10 dark:shadow-purple-950/30 overflow-hidden">
-        <!-- Inner Glassmorphic Card Surface -->
-        <div class="relative rounded-[14px] bg-paper-surface/95 dark:bg-night-surface/95 backdrop-blur-2xl px-3 py-2 sm:px-5 sm:py-2.5 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 text-paper-text dark:text-night-text">
-          
-          <!-- Left: Gemini Live Badge + Prominent Clear English Date -->
-          <div class="flex items-center justify-between sm:justify-start gap-2.5 sm:gap-3.5 w-full sm:w-auto">
-            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 sm:py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-500/15 via-purple-500/15 to-pink-500/15 text-indigo-700 dark:text-purple-300 border border-purple-500/30 dark:border-purple-400/40 shadow-2xs shrink-0">
-              <span class="animate-pulse text-xs sm:text-sm leading-none">✨</span>
-              <span class="tracking-wider uppercase text-[10px] font-mono font-bold">GEMINI LIVE</span>
-            </div>
-            <div class="flex items-center gap-1.5 text-left">
-              <span class="text-xs text-purple-600 dark:text-purple-400 select-none">🗓️</span>
-              <span id="gemini-live-date" class="text-xs sm:text-sm md:text-base font-bold font-sans tracking-tight text-paper-text dark:text-night-text whitespace-nowrap">
-                --
-              </span>
-            </div>
-          </div>
-
-          <!-- Right: Prominent Digital Chronometer with Ticking Neon Seconds -->
-          <div class="flex items-center justify-center w-full sm:w-auto">
-            <div class="inline-flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-1 rounded-xl bg-paper-bg/95 dark:bg-night-bg/95 border border-purple-500/30 dark:border-purple-400/30 shadow-inner font-mono tabular-nums select-none" title="লাইভ ঘড়ি ও সেকেন্ড">
-              <span id="gemini-clock-hours" class="text-base sm:text-xl md:text-2xl font-black text-paper-text dark:text-night-text tracking-tight">--</span>
-              <span class="text-purple-500 dark:text-purple-400 text-base sm:text-xl md:text-2xl font-bold animate-pulse leading-none">:</span>
-              <span id="gemini-clock-minutes" class="text-base sm:text-xl md:text-2xl font-black text-paper-text dark:text-night-text tracking-tight">--</span>
-              <span class="text-purple-500 dark:text-purple-400 text-base sm:text-xl md:text-2xl font-bold animate-pulse leading-none">:</span>
-              <span id="gemini-clock-seconds" class="text-base sm:text-xl md:text-2xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-amber-600 dark:from-purple-400 dark:via-pink-400 dark:to-amber-400 bg-clip-text text-transparent tracking-tight">--</span>
-              <span id="gemini-clock-period" class="ml-1 sm:ml-1.5 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold font-sans uppercase bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30">--</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Main Navigation Row -->
   <div class="max-w-5xl mx-auto px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between">
     <!-- Brand / Title -->
     <div>
@@ -53,96 +29,138 @@
           আফফান লাবীব
         </h1>
         <p class="text-xs text-paper-muted dark:text-night-muted font-sans tracking-wide mt-0.5" data-i18n="tagline">
-          লাবীবের খেরোখাতা · চিন্তা ও পাঠের নিভৃত আঙিনা
+          চিন্তা ও পাঠের নিভৃত আঙিনা
         </p>
       </a>
     </div>
 
-    <!-- Desktop Navigation (Clean, Architectural & High-Aesthetic) -->
-    <nav class="hidden md:flex items-center space-x-1 lg:space-x-1.5 text-sm font-medium">
-      <a href="/" class="px-2.5 py-1.5 rounded-xl font-serif text-paper-muted dark:text-night-muted hover:text-paper-text dark:hover:text-night-text hover:bg-paper-border/30 dark:hover:bg-night-border/30 transition-colors">
-        <span>প্রধান পাতা</span>
-      </a>
-      <a href="/#categories" class="px-2.5 py-1.5 rounded-xl font-serif text-paper-muted dark:text-night-muted hover:text-paper-text dark:hover:text-night-text hover:bg-paper-border/30 dark:hover:bg-night-border/30 transition-colors">
-        <span>বিষয়ভিত্তিক পাঠাগার</span>
-      </a>
-      <a href="/bookshelf" class="px-2.5 py-1.5 rounded-xl font-serif text-paper-muted dark:text-night-muted hover:text-paper-text dark:hover:text-night-text hover:bg-paper-border/30 dark:hover:bg-night-border/30 transition-colors">
-        <span data-i18n="nav_bookshelf">বুকশেলফ</span>
-      </a>
-      <a href="/about" class="px-2.5 py-1.5 rounded-xl font-serif text-paper-muted dark:text-night-muted hover:text-paper-text dark:hover:text-night-text hover:bg-paper-border/30 dark:hover:bg-night-border/30 transition-colors">
-        <span data-i18n="nav_about">আমার সম্পর্কে</span>
-      </a>
+    <!-- Desktop Navigation -->
+    <nav class="hidden md:flex items-center space-x-1 lg:space-x-2.5 text-sm font-medium">
+      {navLinks.map((link) => {
+        const isActive = currentPath === link.href || (link.href !== '/' && currentPath.startsWith(link.href));
+        return (
+          <a
+            href={link.href}
+            class:list={[
+              'px-2.5 py-1.5 rounded-md transition-colors',
+              isActive
+                ? 'text-paper-accent dark:text-night-accent font-semibold bg-paper-accent/10 dark:bg-night-accent/10'
+                : 'text-paper-muted dark:text-night-muted hover:text-paper-text dark:hover:text-night-text hover:bg-paper-border/40 dark:hover:bg-night-border/40'
+            ]}
+          >
+            <span data-i18n={link.key}>{link.label}</span>
+          </a>
+        );
+      })}
 
-      <!-- Search Button -->
-      <a href="/search" class="p-2 rounded-full text-paper-muted dark:text-night-muted hover:text-paper-accent dark:hover:text-night-accent hover:bg-paper-border/40 dark:hover:bg-night-border/50 transition-colors" title="অনুসন্ধান করুন" aria-label="Search">
+      <!-- Search Icon Link -->
+      <a
+        href="/search"
+        class="p-2 rounded-full text-paper-muted dark:text-night-muted hover:text-paper-accent dark:hover:text-night-accent hover:bg-paper-border/40 dark:hover:bg-night-border/50 transition-colors"
+        title="অনুসন্ধান করুন"
+        aria-label="Search"
+        data-i18n-title="search"
+      >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
       </a>
 
-      <!-- Install App Button -->
-      <button type="button" onclick="window.openInstallModal && window.openInstallModal()" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded-xl font-sans font-medium text-paper-accent dark:text-night-accent hover:bg-paper-accent/10 dark:hover:bg-night-accent/10 border border-paper-accent/30 dark:border-night-accent/30 transition-colors cursor-pointer" title="মোবাইল বা পিসিতে অ্যাপ ইনস্টল করুন">
+      <!-- Install App Button (Minimalist) -->
+      <button
+        type="button"
+        onclick="window.openInstallModal && window.openInstallModal()"
+        class="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded-md font-sans font-medium text-paper-accent dark:text-night-accent hover:bg-paper-accent/10 dark:hover:bg-night-accent/10 border border-paper-accent/30 dark:border-night-accent/30 transition-colors cursor-pointer"
+        title="মোবাইল বা পিসিতে অ্যাপ ইনস্টল করুন"
+      >
         <span>📲</span>
-        <span data-i18n="install">অ্যাপ</span>
+        <span data-i18n="install">অ্যাপ নামান</span>
+      </button>
+
+      <!-- Author Studio Quick Entrance -->
+      <button
+        type="button"
+        onclick="window.openAdminStudio && window.openAdminStudio()"
+        class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs rounded-full font-sans font-medium text-paper-muted dark:text-night-muted hover:text-paper-accent dark:hover:text-night-accent hover:bg-paper-border/40 dark:hover:bg-night-border/40 border border-paper-border/60 dark:border-night-border/60 transition-colors cursor-pointer"
+        title="আফফান লাবীব — লেখক স্টুডিও প্রবেশদ্বার (পাসওয়ার্ড সুরক্ষিত)"
+      >
+        <span>🔐</span>
+        <span class="hidden lg:inline" data-i18n="studio">লেখক স্টুডিও</span>
       </button>
 
       <!-- Theme Mode Toggle -->
-      <button type="button" aria-label="Toggle Reading Theme Mode" class="theme-toggle-btn group relative inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/80 dark:bg-night-surface/80 backdrop-blur-md hover:border-paper-accent dark:hover:border-night-accent shadow-2xs hover:shadow-sm transition-all duration-300 cursor-pointer text-xs font-sans active:scale-95" title="রিডিং মোড পরিবর্তন করুন (দিন · সেপিয়া বই · রাত)">
-        <span class="theme-icon-light text-amber-600 dark:text-amber-400 text-sm leading-none flex items-center">☀️</span>
-        <span class="theme-icon-sepia hidden text-amber-700 text-sm leading-none items-center">📜</span>
-        <span class="theme-icon-dark hidden text-indigo-400 text-sm leading-none items-center">🌙</span>
-        <span class="theme-label hidden sm:inline font-medium text-paper-text dark:text-night-text select-none">দিন</span>
-      </button>
+      <ThemeToggle />
 
       <!-- Language Toggle -->
-      <button type="button" aria-label="Toggle Language" class="lang-toggle-btn group relative inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/80 dark:bg-night-surface/80 backdrop-blur-md hover:border-paper-accent dark:hover:border-night-accent shadow-2xs hover:shadow-sm transition-all duration-300 cursor-pointer text-xs font-sans active:scale-95" title="ভাষা পরিবর্তন করুন (বাংলা / English)">
-        <span class="text-xs leading-none">🌐</span>
-        <span class="lang-text-bn font-bold text-paper-accent dark:text-night-accent select-none">বাং</span>
-        <span class="text-paper-muted/50 dark:text-night-muted/50 text-[10px]">/</span>
-        <span class="lang-text-en font-medium text-paper-muted dark:text-night-muted select-none">EN</span>
-      </button>
+      <LanguageToggle />
     </nav>
 
     <!-- Mobile Action Buttons -->
-    <div class="flex items-center space-x-1.5 md:hidden">
-      <a href="/search" class="p-1.5 rounded-full text-paper-muted dark:text-night-muted hover:text-paper-accent" aria-label="Search">
+    <div class="flex items-center space-x-1 sm:space-x-1.5 md:hidden">
+      <!-- Mobile Quick Studio Lock -->
+      <button
+        type="button"
+        onclick="window.openAdminStudio && window.openAdminStudio()"
+        class="p-1.5 rounded-full text-paper-muted dark:text-night-muted hover:text-paper-accent"
+        title="লেখক স্টুডিও"
+        aria-label="Author Studio"
+      >
+        🔐
+      </button>
+      <a
+        href="/search"
+        class="p-1.5 rounded-full text-paper-muted dark:text-night-muted hover:text-paper-accent"
+        aria-label="Search"
+      >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
       </a>
 
       <!-- Mobile Theme Toggle -->
-      <button type="button" aria-label="Toggle Reading Theme Mode" class="theme-toggle-btn p-1.5 rounded-full text-paper-muted dark:text-night-muted hover:text-paper-accent">
-        <span class="theme-icon-light text-amber-600 dark:text-amber-400 text-sm">☀️</span>
-        <span class="theme-icon-sepia hidden text-amber-700 text-sm">📜</span>
-        <span class="theme-icon-dark hidden text-indigo-400 text-sm">🌙</span>
-      </button>
+      <ThemeToggle />
 
-      <!-- Mobile Menu Toggle Button -->
-      <button id="mobile-menu-btn" type="button" class="p-1.5 rounded-md text-paper-muted dark:text-night-muted hover:text-paper-accent" aria-label="Toggle menu">
+      <!-- Mobile Language Toggle -->
+      <LanguageToggle />
+
+      <button
+        id="mobile-menu-btn"
+        type="button"
+        class="p-1.5 rounded-md text-paper-muted dark:text-night-muted hover:text-paper-accent"
+        aria-label="Toggle menu"
+      >
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
     </div>
   </div>
 
-  <!-- Mobile Dropdown Menu (Cleaned and Focused) -->
+  <!-- Mobile Dropdown Menu -->
   <div id="mobile-menu" class="hidden md:hidden border-t border-paper-border/60 dark:border-night-border/60 px-4 pt-2 pb-4 bg-paper-bg dark:bg-night-bg space-y-1">
-    <a href="/" class="block px-3 py-2 rounded-md text-base font-serif text-paper-text dark:text-night-text hover:bg-paper-border/30 dark:hover:bg-night-border/30">
-      <span>প্রধান পাতা</span>
-    </a>
-    <a href="/#categories" onclick="document.getElementById('mobile-menu')?.classList.add('hidden');" class="block px-3 py-2 rounded-md text-base font-serif text-paper-text dark:text-night-text hover:bg-paper-border/30 dark:hover:bg-night-border/30">
-      <span>বিষয়ভিত্তিক পাঠাগার</span>
-    </a>
-    <a href="/bookshelf" class="block px-3 py-2 rounded-md text-base font-serif text-paper-text dark:text-night-text hover:bg-paper-border/30 dark:hover:bg-night-border/30">
-      <span data-i18n="nav_bookshelf">বুকশেলফ (পাঠাগার ও ইচ্ছেতালিকা)</span>
-    </a>
-    <a href="/about" class="block px-3 py-2 rounded-md text-base font-serif text-paper-text dark:text-night-text hover:bg-paper-border/30 dark:hover:bg-night-border/30">
-      <span data-i18n="nav_about">আমার সম্পর্কে (লেখক পরিচিতি)</span>
-    </a>
+    {navLinks.map((link) => {
+      const isActive = currentPath === link.href;
+      return (
+        <a
+          href={link.href}
+          class:list={[
+            'block px-3 py-2 rounded-md text-base font-serif',
+            isActive
+              ? 'text-paper-accent dark:text-night-accent font-semibold bg-paper-accent/10 dark:bg-night-accent/10'
+              : 'text-paper-text dark:text-night-text hover:bg-paper-border/30 dark:hover:bg-night-border/30'
+          ]}
+        >
+          <span data-i18n={link.key}>{link.label}</span>
+        </a>
+      );
+    })}
 
-    <button type="button" onclick="window.openInstallModal && window.openInstallModal(); document.getElementById('mobile-menu')?.classList.add('hidden');" class="w-full text-left flex items-center justify-between px-3 py-2.5 rounded-md text-base font-serif text-paper-accent dark:text-night-accent hover:bg-paper-border/30 dark:hover:bg-night-border/30 border border-paper-accent/30 dark:border-night-accent/30 mt-2 bg-paper-accent/5 dark:bg-night-accent/5 cursor-pointer">
+    <!-- Mobile Install Button -->
+    <button
+      type="button"
+      onclick="window.openInstallModal && window.openInstallModal(); document.getElementById('mobile-menu')?.classList.add('hidden');"
+      class="w-full text-left flex items-center justify-between px-3 py-2.5 rounded-md text-base font-serif text-paper-accent dark:text-night-accent hover:bg-paper-border/30 dark:hover:bg-night-border/30 border border-paper-accent/30 dark:border-night-accent/30 mt-2 bg-paper-accent/5 dark:bg-night-accent/5 cursor-pointer"
+    >
       <span class="flex items-center gap-2">
         <span data-i18n="install_full">📲 অ্যাপ নামান / ইনস্টল</span>
       </span>
@@ -150,181 +168,31 @@
         অফলাইন রিডিং
       </span>
     </button>
+
+    <!-- Mobile Author Studio Button -->
+    <button
+      type="button"
+      onclick="window.openAdminStudio && window.openAdminStudio(); document.getElementById('mobile-menu')?.classList.add('hidden');"
+      class="w-full text-left flex items-center justify-between px-3 py-2.5 rounded-md text-base font-serif text-paper-text dark:text-night-text hover:bg-paper-border/30 border border-paper-border/60 dark:border-night-border/60 mt-2 cursor-pointer bg-paper-surface/40"
+    >
+      <span class="flex items-center gap-2">
+        <span data-i18n="studio_full">🔐 লেখক স্টুডিও (অ্যাডমিন)</span>
+      </span>
+      <span class="text-xs font-sans text-paper-muted" data-i18n="studio_badge">
+        পাসওয়ার্ড কোড
+      </span>
+    </button>
   </div>
+
+  <!-- Global Install Options Modal -->
+  <InstallModal />
 </header>
 
-<!-- Restored Gemini Live Chronometer Script -->
 <script is:inline>
-  (() => {
-    const EN_MONTHS = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ];
-    const EN_DAYS = [
-      'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
-    ];
-
-    const dateEl = document.getElementById('gemini-live-date');
-    const hoursEl = document.getElementById('gemini-clock-hours');
-    const minutesEl = document.getElementById('gemini-clock-minutes');
-    const secondsEl = document.getElementById('gemini-clock-seconds');
-    const periodEl = document.getElementById('gemini-clock-period');
-
-    function padZero(num) {
-      return num < 10 ? '0' + num : num.toString();
-    }
-
-    function updateGeminiClock() {
-      const now = new Date();
-
-      const dayName = EN_DAYS[now.getDay()];
-      const dateNum = now.getDate();
-      const monthName = EN_MONTHS[now.getMonth()];
-      const year = now.getFullYear();
-      const formattedDate = `${dayName}, ${dateNum} ${monthName} ${year}`;
-
-      if (dateEl && dateEl.textContent !== formattedDate) {
-        dateEl.textContent = formattedDate;
-      }
-
-      let hours = now.getHours();
-      const minutes = now.getMinutes();
-      const seconds = now.getSeconds();
-      const period = hours >= 12 ? 'PM' : 'AM';
-
-      const hours12 = hours % 12 || 12;
-      const hStr = padZero(hours12);
-      const mStr = padZero(minutes);
-      const sStr = padZero(seconds);
-
-      if (hoursEl) hoursEl.textContent = hStr;
-      if (minutesEl) minutesEl.textContent = mStr;
-      if (secondsEl) secondsEl.textContent = sStr;
-      if (periodEl) periodEl.textContent = period;
-    }
-
-    updateGeminiClock();
-    setInterval(updateGeminiClock, 1000);
-
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) updateGeminiClock();
-    });
-  })();
+  const menuBtn = document.getElementById('mobile-menu-btn');
+  const mobileMenu = document.getElementById('mobile-menu');
+  menuBtn?.addEventListener('click', () => {
+    mobileMenu?.classList.toggle('hidden');
+  });
 </script>
 
-<!-- Global Header Interactions Script (Single Instance) -->
-<script is:inline>
-  (() => {
-    // 1. Mobile Menu Toggle
-    const menuBtn = document.getElementById('mobile-menu-btn');
-    const mobileMenu = document.getElementById('mobile-menu');
-    menuBtn?.addEventListener('click', () => {
-      mobileMenu?.classList.toggle('hidden');
-    });
-
-    // 2. Theme Toggle Engine
-    const MODES = ['light', 'sepia', 'dark'];
-    const LABELS = {
-      bn: { light: 'দিন', sepia: 'সেপিয়া', dark: 'রাত' },
-      en: { light: 'Day', sepia: 'Sepia', dark: 'Night' }
-    };
-
-    function getCurrentTheme() {
-      if (document.documentElement.classList.contains('dark')) return 'dark';
-      if (document.documentElement.classList.contains('sepia')) return 'sepia';
-      return 'light';
-    }
-
-    function syncThemeUI(mode) {
-      const currentMode = mode || getCurrentTheme();
-      const lang = localStorage.getItem('kherokhata_lang') || 'bn';
-      const labelText = (LABELS[lang] || LABELS.bn)[currentMode] || 'দিন';
-
-      document.querySelectorAll('.theme-icon-light').forEach((el) => el.classList.toggle('hidden', currentMode !== 'light'));
-      document.querySelectorAll('.theme-icon-sepia').forEach((el) => el.classList.toggle('hidden', currentMode !== 'sepia'));
-      document.querySelectorAll('.theme-icon-dark').forEach((el) => el.classList.toggle('hidden', currentMode !== 'dark'));
-      document.querySelectorAll('.theme-label').forEach((el) => { el.textContent = labelText; });
-    }
-
-    function applyTheme(mode) {
-      document.documentElement.classList.remove('dark', 'sepia');
-      if (mode === 'dark') document.documentElement.classList.add('dark');
-      else if (mode === 'sepia') document.documentElement.classList.add('sepia');
-      try { localStorage.setItem('theme', mode); } catch (e) {}
-      syncThemeUI(mode);
-    }
-
-    document.addEventListener('click', (e) => {
-      const btn = e.target.closest('.theme-toggle-btn');
-      if (!btn) return;
-      const cur = getCurrentTheme();
-      const next = MODES[(MODES.indexOf(cur) + 1) % MODES.length];
-      applyTheme(next);
-    });
-    syncThemeUI();
-
-    // 3. Language Switcher Engine
-    const DICT = {
-      bn: {
-        tagline: 'চিন্তা ও পাঠের নিভৃত আঙিনা',
-        nav_chinta: 'চিন্তা',
-        nav_pathalap: 'পাঠালাপ',
-        nav_itihas: 'ইতিহাস',
-        nav_boi: 'বই-আলোচনা',
-        nav_onubad: 'অনুবাদ',
-        nav_bookshelf: 'বুকশেলফ',
-        nav_about: 'আমার সম্পর্কে',
-        install: 'অ্যাপ নামান',
-        install_full: '📲 অ্যাপ নামান / ইনস্টল',
-        install_badge: 'অফলাইন রিডিং'
-      },
-      en: {
-        tagline: 'A Haven of Thought and Reading',
-        nav_chinta: 'Reflections',
-        nav_pathalap: 'Dialogues',
-        nav_itihas: 'History',
-        nav_boi: 'Book Reviews',
-        nav_onubad: 'Translations',
-        nav_bookshelf: 'Bookshelf',
-        nav_about: 'About Me',
-        install: 'Install App',
-        install_full: '📲 Install App / PWA',
-        install_badge: 'Offline Reading'
-      }
-    };
-
-    function syncLangUI(lang) {
-      const current = lang || localStorage.getItem('kherokhata_lang') || 'bn';
-      const d = DICT[current] || DICT.bn;
-
-      document.querySelectorAll('.lang-toggle-btn').forEach((btn) => {
-        const bnEl = btn.querySelector('.lang-text-bn');
-        const enEl = btn.querySelector('.lang-text-en');
-        if (current === 'en') {
-          if (bnEl) bnEl.className = 'lang-text-bn font-medium text-paper-muted dark:text-night-muted select-none';
-          if (enEl) enEl.className = 'lang-text-en font-bold text-paper-accent dark:text-night-accent select-none';
-        } else {
-          if (bnEl) bnEl.className = 'lang-text-bn font-bold text-paper-accent dark:text-night-accent select-none';
-          if (enEl) enEl.className = 'lang-text-en font-medium text-paper-muted dark:text-night-muted select-none';
-        }
-      });
-
-      document.querySelectorAll('[data-i18n]').forEach((el) => {
-        const key = el.getAttribute('data-i18n');
-        if (key && d[key]) el.textContent = d[key];
-      });
-
-      syncThemeUI();
-    }
-
-    document.addEventListener('click', (e) => {
-      const btn = e.target.closest('.lang-toggle-btn');
-      if (!btn) return;
-      const cur = localStorage.getItem('kherokhata_lang') || 'bn';
-      const next = cur === 'bn' ? 'en' : 'bn';
-      localStorage.setItem('kherokhata_lang', next);
-      syncLangUI(next);
-    });
-    syncLangUI();
-  })();
-</script>

@@ -1,0 +1,37 @@
+---
+// QuoteBlock.astro
+interface Props {
+  arabicText?: string;
+  banglaMeaning?: string;
+  englishText?: string;
+  source?: string;
+}
+
+const { arabicText, banglaMeaning, englishText, source } = Astro.props;
+---
+
+<div class="my-6 p-5 sm:p-6 rounded-lg bg-paper-border/20 dark:bg-night-border/30 border-l-4 border-paper-accent dark:border-night-accent font-serif not-prose space-y-3">
+  {arabicText && (
+    <div class="arabic-text text-xl sm:text-2xl text-paper-text dark:text-night-text text-right font-arabic leading-loose tracking-wide">
+      « {arabicText} »
+    </div>
+  )}
+
+  {banglaMeaning && (
+    <div class="text-base sm:text-lg text-paper-text/90 dark:text-night-text/90 leading-relaxed italic">
+      {banglaMeaning}
+    </div>
+  )}
+
+  {englishText && (
+    <div class="text-base text-paper-muted dark:text-night-muted italic font-sans leading-relaxed">
+      "{englishText}"
+    </div>
+  )}
+
+  {source && (
+    <div class="text-xs font-sans font-semibold text-paper-accent dark:text-night-accent text-right pt-1">
+      — {source}
+    </div>
+  )}
+</div>

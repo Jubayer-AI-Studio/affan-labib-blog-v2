@@ -1,0 +1,31 @@
+---
+// FootnoteTooltip.astro
+interface Props {
+  id: number | string;
+  text: string;
+}
+
+const { id, text } = Astro.props;
+---
+
+<span class="relative inline-block group not-prose">
+  <button
+    type="button"
+    aria-describedby={`fn-tooltip-${id}`}
+    class="inline-flex items-center justify-center text-xs font-sans font-bold text-paper-accent dark:text-night-accent hover:underline px-0.5 align-super cursor-pointer"
+  >
+    [{id}]
+  </button>
+
+  <!-- Interactive Floating Popover on Hover/Focus -->
+  <span
+    id={`fn-tooltip-${id}`}
+    role="tooltip"
+    class="invisible group-hover:visible group-focus-within:visible opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-all duration-200 absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 sm:w-72 p-3 bg-paper-surface dark:bg-night-surface border border-paper-border dark:border-night-border rounded-lg shadow-lg text-xs font-serif text-paper-text dark:text-night-text z-50 text-left pointer-events-none"
+  >
+    <span class="block font-bold text-paper-accent dark:text-night-accent font-sans mb-1 text-[11px]">
+      সূত্র ও টীকা [{id}]:
+    </span>
+    {text}
+  </span>
+</span>

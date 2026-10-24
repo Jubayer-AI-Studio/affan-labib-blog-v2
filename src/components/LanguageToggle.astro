@@ -1,0 +1,139 @@
+---
+// src/components/LanguageToggle.astro
+---
+
+<button
+  type="button"
+  aria-label="Toggle Language (Bengali / English)"
+  class="lang-toggle-btn group relative inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/80 dark:bg-night-surface/80 backdrop-blur-md hover:border-paper-accent dark:hover:border-night-accent shadow-2xs hover:shadow-sm transition-all duration-300 cursor-pointer text-xs font-sans active:scale-95"
+  title="ভাষা পরিবর্তন করুন (বাংলা / English)"
+>
+  <span class="text-xs leading-none">🌐</span>
+  <span class="lang-text-bn font-bold text-paper-accent dark:text-night-accent select-none">বাং</span>
+  <span class="text-paper-muted/50 dark:text-night-muted/50 text-[10px]">/</span>
+  <span class="lang-text-en font-medium text-paper-muted dark:text-night-muted select-none">EN</span>
+</button>
+
+<script is:inline>
+  (() => {
+    if (window.__langToggleInitialized) {
+      if (typeof window.__syncLangUI === 'function') {
+        window.__syncLangUI();
+      }
+      return;
+    }
+    window.__langToggleInitialized = true;
+
+    const DICTIONARY = {
+      bn: {
+        tagline: 'চিন্তা ও পাঠের নিভৃত আঙিনা',
+        nav_chinta: 'চিন্তা',
+        nav_pathalap: 'পাঠালাপ',
+        nav_itihas: 'ইতিহাস',
+        nav_boi: 'বই-আলোচনা',
+        nav_onubad: 'অনুবাদ',
+        nav_bookshelf: 'বুকশেলফ',
+        nav_about: 'আমার সম্পর্কে',
+        search: 'অনুসন্ধান',
+        install: 'অ্যাপ নামান',
+        install_full: '📲 অ্যাপ নামান / ইনস্টল',
+        install_badge: 'অফলাইন রিডিং',
+        studio: 'লেখক স্টুডিও',
+        studio_full: '🔐 লেখক স্টুডিও (অ্যাডমিন)',
+        studio_badge: 'পাসওয়ার্ড কোড',
+        live_badge: 'লাইভ সাহিত্যিক বাণী',
+        change_quote: 'বাণী বদলান',
+        theme_title: 'রিডিং মোড পরিবর্তন করুন (দিন · সেপিয়া বই · রাত)',
+        bookshelf_badge: 'ব্যক্তিগত পাঠাগার ও বুকশেলফ',
+      },
+      en: {
+        tagline: 'A Haven of Thought and Reading',
+        nav_chinta: 'Reflections',
+        nav_pathalap: 'Dialogues',
+        nav_itihas: 'History',
+        nav_boi: 'Book Reviews',
+        nav_onubad: 'Translations',
+        nav_bookshelf: 'Bookshelf',
+        nav_about: 'About Me',
+        search: 'Search',
+        install: 'Install App',
+        install_full: '📲 Install App / PWA',
+        install_badge: 'Offline Reading',
+        studio: 'Author Studio',
+        studio_full: '🔐 Author Studio (Admin)',
+        studio_badge: 'Secret PIN',
+        live_badge: 'Live Literary Quotes',
+        change_quote: 'Change Quote',
+        theme_title: 'Change Reading Mode (Day · Sepia · Night)',
+        bookshelf_badge: 'Personal Bookshelf & Library',
+      }
+    };
+
+    function getCurrentLang() {
+      return localStorage.getItem('kherokhata_lang') || 'bn';
+    }
+
+    function syncLangUI(lang) {
+      const current = lang || getCurrentLang();
+      const dict = DICTIONARY[current] || DICTIONARY.bn;
+
+      // Update button highlights
+      document.querySelectorAll('.lang-toggle-btn').forEach((btn) => {
+        const bnEl = btn.querySelector('.lang-text-bn');
+        const enEl = btn.querySelector('.lang-text-en');
+        if (current === 'en') {
+          if (bnEl) bnEl.className = 'lang-text-bn font-medium text-paper-muted dark:text-night-muted select-none';
+          if (enEl) enEl.className = 'lang-text-en font-bold text-paper-accent dark:text-night-accent select-none';
+        } else {
+          if (bnEl) bnEl.className = 'lang-text-bn font-bold text-paper-accent dark:text-night-accent select-none';
+          if (enEl) enEl.className = 'lang-text-en font-medium text-paper-muted dark:text-night-muted select-none';
+        }
+      });
+
+      // Update elements with data-i18n
+      document.querySelectorAll('[data-i18n]').forEach((el) => {
+        const key = el.getAttribute('data-i18n');
+        if (key && dict[key]) {
+          el.textContent = dict[key];
+        }
+      });
+
+      // Update title/aria attributes
+      document.querySelectorAll('[data-i18n-title]').forEach((el) => {
+        const key = el.getAttribute('data-i18n-title');
+        if (key && dict[key]) {
+          el.setAttribute('title', dict[key]);
+        }
+      });
+
+      // Dispatch event for other components (like ThemeToggle)
+      window.dispatchEvent(new CustomEvent('kherokhata-lang-change', { detail: { lang: current } }));
+    }
+
+    function toggleLang() {
+      const current = getCurrentLang();
+      const nextLang = current === 'bn' ? 'en' : 'bn';
+      try {
+        localStorage.setItem('kherokhata_lang', nextLang);
+      } catch (e) {}
+      syncLangUI(nextLang);
+    }
+
+    window.__syncLangUI = syncLangUI;
+    window.__toggleLang = toggleLang;
+
+    // Attach click listener via delegation
+    document.addEventListener('click', (e) => {
+      const targetBtn = e.target.closest('.lang-toggle-btn');
+      if (targetBtn) {
+        toggleLang();
+      }
+    });
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => syncLangUI());
+    } else {
+      syncLangUI();
+    }
+  })();
+</script>

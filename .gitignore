@@ -1,10 +1,20 @@
+# Build and dependencies
 node_modules/
 dist/
 .astro/
-.env*
+.vercel/
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+
+# Local executables and scratch
+cloudflared.exe
+scratch/
+.spec/
+.agents/
+
+# OS Files
 .DS_Store
 Thumbs.db
-
-.vercel
-.env*
-scratch/

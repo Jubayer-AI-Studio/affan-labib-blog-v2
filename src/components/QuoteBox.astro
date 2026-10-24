@@ -1,0 +1,237 @@
+---
+// src/components/QuoteBox.astro
+import author from '../data/author.json';
+---
+
+<section class="my-16 relative overflow-hidden rounded-3xl">
+  <!-- Glowing Liquid Aura & Animated Water Wave Ripple -->
+  <div class="absolute -inset-4 rounded-3xl bg-gradient-to-r from-amber-500/20 via-rose-500/15 to-cyan-500/20 dark:from-amber-400/15 dark:via-orange-500/20 dark:to-teal-500/20 blur-2xl opacity-75 animate-liquid-pulse pointer-events-none"></div>
+
+  <!-- Animated Floating Water Droplet Ripples -->
+  <div class="absolute inset-0 pointer-events-none overflow-hidden opacity-40">
+    <div class="water-ring absolute -top-12 -left-12 w-48 h-48 rounded-full border border-amber-400/30 animate-water-expand"></div>
+    <div class="water-ring absolute -bottom-16 -right-12 w-64 h-64 rounded-full border border-teal-400/30 animate-water-expand-slow"></div>
+  </div>
+
+  <!-- Rotating Border Beam Container -->
+  <div class="relative overflow-hidden rounded-3xl p-[2px] bg-gradient-to-br from-paper-accent/40 via-amber-400/40 to-teal-400/30 dark:from-night-accent/40 dark:via-orange-400/30 dark:to-cyan-400/20 shadow-xl group">
+    <!-- Spinning Light Ray around Border -->
+    <div class="absolute -inset-[100%] animate-border-rotate bg-[conic-gradient(from_0deg,transparent_0_300deg,#9A3412_330deg,transparent_360deg)] dark:bg-[conic-gradient(from_0deg,transparent_0_300deg,#FB923C_330deg,transparent_360deg)] opacity-60 pointer-events-none"></div>
+
+    <!-- Inner Card Content with Liquid Glass Effect -->
+    <div class="relative rounded-[22px] bg-paper-surface/90 dark:bg-night-surface/90 backdrop-blur-2xl p-7 sm:p-10 text-center space-y-6">
+      
+      <!-- Top Bar: Live Badge, Audio Visualizer, Heart Like, Next Quote -->
+      <div class="flex items-center justify-between flex-wrap gap-3 pb-3 border-b border-paper-border/60 dark:border-night-border/60">
+        
+        <!-- Live Stream Pulsating Badge -->
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-sans font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 shadow-2xs">
+          <span class="relative flex h-2.5 w-2.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-600"></span>
+          </span>
+          <span data-i18n="live_badge">লাইভ সাহিত্যিক বাণী</span>
+          <span class="text-[10px] px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-700 dark:text-rose-300 font-mono tracking-wider">LIVE</span>
+        </div>
+
+        <!-- 7-Bar Audio Soundwave Visualizer with Rhythmic Waves -->
+        <div class="flex items-center gap-1 h-5 text-paper-accent dark:text-night-accent opacity-85" title="লাইভ চিন্তার ধ্বনিমালা (Live Cadence)">
+          <span class="w-1 bg-current rounded-full soundwave-bar h-2"></span>
+          <span class="w-1 bg-current rounded-full soundwave-bar h-4" style="animation-delay: 0.15s"></span>
+          <span class="w-1 bg-current rounded-full soundwave-bar h-5" style="animation-delay: 0.3s"></span>
+          <span class="w-1 bg-current rounded-full soundwave-bar h-3" style="animation-delay: 0.1s"></span>
+          <span class="w-1 bg-current rounded-full soundwave-bar h-5" style="animation-delay: 0.25s"></span>
+          <span class="w-1 bg-current rounded-full soundwave-bar h-4" style="animation-delay: 0.35s"></span>
+          <span class="w-1 bg-current rounded-full soundwave-bar h-2" style="animation-delay: 0.2s"></span>
+        </div>
+
+        <!-- Right Side Actions: Heart Reaction + Next Quote Button -->
+        <div class="flex items-center gap-2">
+          <!-- Heart Reaction Button -->
+          <button
+            id="quote-like-btn"
+            type="button"
+            class="relative inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-sans font-medium border border-rose-200 dark:border-rose-900/50 bg-rose-50/60 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 hover:scale-105 active:scale-95 transition-transform cursor-pointer shadow-2xs"
+            title="হৃদয়স্পর্শী বাণী পছন্দ করুন"
+          >
+            <span id="heart-icon" class="text-sm">❤️</span>
+            <span id="heart-count" class="font-mono text-xs">৪২</span>
+            <span id="heart-burst" class="pointer-events-none absolute -top-4 left-1/2 -translate-x-1/2 opacity-0 text-sm transition-all duration-500">❤️+১</span>
+          </button>
+
+          <!-- Rotate Quote Button -->
+          <button
+            id="next-quote-btn"
+            type="button"
+            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-sans font-medium border border-paper-border dark:border-night-border bg-paper-bg/60 dark:bg-night-bg/60 hover:border-paper-accent text-paper-text dark:text-night-text transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-2xs"
+            title="পরবর্তী বাণী শুনুন"
+            data-i18n-title="change_quote"
+          >
+            <span id="refresh-icon" class="transition-transform duration-500 inline-block">🔄</span>
+            <span data-i18n="change_quote">বাণী বদলান</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Quote Body with Floating Sparkles -->
+      <div class="relative py-2 sm:py-4">
+        <!-- Floating Sparkles -->
+        <span class="absolute top-0 left-6 text-amber-400 dark:text-amber-300 opacity-60 text-base animate-pulse pointer-events-none">✨</span>
+        <span class="absolute bottom-2 right-8 text-teal-500 dark:text-teal-300 opacity-50 text-sm animate-bounce pointer-events-none" style="animation-duration: 3s;">✦</span>
+
+        <!-- Calligraphic Big Quote Mark -->
+        <span class="text-5xl sm:text-6xl font-serif text-paper-accent/20 dark:text-night-accent/20 select-none block leading-none -mb-3">
+          ❝
+        </span>
+
+        <blockquote
+          id="quote-text"
+          class="text-lg sm:text-xl md:text-2xl font-serif font-medium text-paper-text dark:text-night-text leading-relaxed max-w-2xl mx-auto italic transition-all duration-300 select-text"
+        >
+          "পড়াশোনা শুধু কোনো পরীক্ষার নিগড়ে বাঁধা বিষয় নয়—এটি এক অনন্ত মুসাফিরের মতো জ্ঞানের মুক্ত মাঠে ঘুরে বেড়ানো। বইয়ের সান্নিধ্যে মন শান্ত হয়, চিন্তা পায় নতুন গভীরতা।"
+        </blockquote>
+
+        <!-- Quote Auto-Advance Progress Line -->
+        <div class="w-24 h-1 bg-paper-border/60 dark:border-night-border/60 rounded-full mx-auto mt-4 overflow-hidden">
+          <div id="quote-progress" class="h-full bg-gradient-to-r from-amber-500 via-rose-500 to-teal-500 w-0 transition-all duration-100 ease-linear rounded-full"></div>
+        </div>
+      </div>
+
+      <!-- Author Citation & Live Orbiting Ring -->
+      <div class="pt-1 flex items-center justify-center gap-3">
+        <div class="w-8 h-0.5 bg-paper-accent/40 dark:bg-night-accent/40 rounded-full"></div>
+        <div class="flex items-center gap-2">
+          <img
+            src={author.avatar}
+            alt={author.name}
+            class="author-avatar-img w-6 h-6 rounded-full object-cover ring-1 ring-paper-accent/40 shadow-xs"
+          />
+          <cite class="text-sm font-sans font-bold text-paper-accent dark:text-night-accent not-italic">
+            — <span class="author-name-text">{author.name}</span>
+          </cite>
+          <span class="text-xs text-paper-muted dark:text-night-muted font-sans font-normal">
+            (<span class="author-edu-text">{author.education}</span>)
+          </span>
+        </div>
+        <div class="w-8 h-0.5 bg-paper-accent/40 dark:bg-night-accent/40 rounded-full"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  @keyframes liquid-pulse {
+    0%, 100% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.04); opacity: 0.9; }
+  }
+  .animate-liquid-pulse {
+    animation: liquid-pulse 6s ease-in-out infinite;
+  }
+
+  @keyframes water-expand {
+    0% { transform: scale(0.85); opacity: 0.4; }
+    50% { transform: scale(1.25); opacity: 0.15; }
+    100% { transform: scale(0.85); opacity: 0.4; }
+  }
+  .animate-water-expand {
+    animation: water-expand 8s ease-in-out infinite;
+  }
+  .animate-water-expand-slow {
+    animation: water-expand 12s ease-in-out infinite 3s;
+  }
+
+  @keyframes soundwave {
+    0%, 100% { height: 4px; }
+    50% { height: 18px; }
+  }
+  .soundwave-bar {
+    animation: soundwave 1.2s ease-in-out infinite;
+  }
+</style>
+
+<script is:inline>
+  (() => {
+    const quotes = [
+      "পড়াশোনা শুধু কোনো পরীক্ষার নিগড়ে বাঁধা বিষয় নয়—এটি এক অনন্ত মুসাফিরের মতো জ্ঞানের মুক্ত মাঠে ঘুরে বেড়ানো। বইয়ের সান্নিধ্যে মন শান্ত হয়, চিন্তা পায় নতুন গভীরতা।",
+      "বইয়ের পাতায় যে নীরব সঙ্গ পাওয়া যায়, কোলাহলময় পৃথিবীতে তা আর কোথাও মেলে না। প্রতিটি কিতাব যেন এক নতুন দিগন্তের উন্মোচন।",
+      "পরীক্ষার আগের রাতগুলো যেন এক অদ্ভুত জাদুকরী ঘোর—সব পড়াশোনা তখন জীবন্ত হয়ে ওঠে। কিতাবের সুরভিত ঘ্রাণে ক্লান্তি মুছে যায়।",
+      "ইতিহাসের পাতা উল্টালে দেখা যায়, যারা সময়কে সম্মান করেছে এবং বইকে ভালোবেসেছে, সময় তাদের অন্তরে চিরভাস্বর করে রেখেছে।",
+      "চিন্তা যখন কলমের মুখে এসে দাঁড়ায়, তখন শব্দগুলো আর কেবল অক্ষর থাকে না—হয়ে ওঠে হৃদয়ের জীবন্ত প্রতিচ্ছবি।",
+      "মাদরাসার নিরিবিলি বারান্দা আর কিতাবের পাতার খসখস শব্দ—এখানেই রচিত হয় নীরব সাধকের অনন্ত জীবনগাথা।",
+      "রমজানের দিনগুলো যেমন আত্মশুদ্ধির বসন্ত, তেমনই জ্ঞানের সন্ধান মানুষের আত্মাকে সর্বদা সতেজ ও প্রাণবন্ত রাখে।"
+    ];
+
+    let currentIndex = 0;
+    const quoteEl = document.getElementById('quote-text');
+    const nextBtn = document.getElementById('next-quote-btn');
+    const refreshIcon = document.getElementById('refresh-icon');
+    const progressBar = document.getElementById('quote-progress');
+
+    // Heart reaction system
+    const likeBtn = document.getElementById('quote-like-btn');
+    const heartCountEl = document.getElementById('heart-count');
+    const heartBurstEl = document.getElementById('heart-burst');
+    let heartCount = parseInt(localStorage.getItem('kherokhata_quote_hearts') || '42', 10);
+    if (heartCountEl) heartCountEl.textContent = heartCount.toLocaleString('bn-BD');
+
+    likeBtn?.addEventListener('click', () => {
+      heartCount += 1;
+      localStorage.setItem('kherokhata_quote_hearts', heartCount.toString());
+      if (heartCountEl) heartCountEl.textContent = heartCount.toLocaleString('bn-BD');
+
+      if (heartBurstEl) {
+        heartBurstEl.style.opacity = '1';
+        heartBurstEl.style.transform = 'translate(-50%, -18px) scale(1.3)';
+        setTimeout(() => {
+          heartBurstEl.style.opacity = '0';
+          heartBurstEl.style.transform = 'translate(-50%, 0) scale(1)';
+        }, 600);
+      }
+    });
+
+    // Auto rotate every 10 seconds with visual progress indicator
+    const DURATION = 10000;
+    let startTime = Date.now();
+    let progressTimer = null;
+
+    function resetProgress() {
+      startTime = Date.now();
+    }
+
+    function updateProgress() {
+      if (!progressBar) return;
+      const elapsed = Date.now() - startTime;
+      const pct = Math.min(100, (elapsed / DURATION) * 100);
+      progressBar.style.width = pct + '%';
+      if (pct >= 100) {
+        switchQuote();
+      }
+    }
+
+    progressTimer = setInterval(updateProgress, 100);
+
+    function switchQuote() {
+      if (!quoteEl) return;
+      resetProgress();
+
+      if (refreshIcon) {
+        refreshIcon.style.transform = 'rotate(360deg)';
+        setTimeout(() => {
+          refreshIcon.style.transform = 'rotate(0deg)';
+        }, 500);
+      }
+
+      quoteEl.style.opacity = '0';
+      quoteEl.style.transform = 'translateY(8px)';
+
+      setTimeout(() => {
+        currentIndex = (currentIndex + 1) % quotes.length;
+        quoteEl.innerText = `"${quotes[currentIndex]}"`;
+        quoteEl.style.opacity = '1';
+        quoteEl.style.transform = 'translateY(0)';
+      }, 250);
+    }
+
+    nextBtn?.addEventListener('click', switchQuote);
+  })();
+</script>

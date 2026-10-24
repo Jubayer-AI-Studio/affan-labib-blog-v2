@@ -1,213 +1,152 @@
-// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v30 (True 0ms Instant PWA Launch Engine)
-const CACHE_NAME = 'kherokhata-cache-v30';
+// public/sw.js - লাবীবের খেরোখাতা Ultra-Reliable Service Worker v6 (Gemini Live Clock Box)
+const CACHE_NAME = 'kherokhata-cache-v6';
 const PRECACHE_URLS = [
   '/',
   '/offline',
   '/about',
   '/bookshelf',
   '/search',
-  '/admin',
   '/manifest.webmanifest',
-  '/admin-manifest.webmanifest',
   '/favicon.svg',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/icon-maskable.png',
   '/icons/apple-touch-icon.png',
   '/images/affan-labib.jpg',
-  '/images/og-affan-labib-v4.jpg',
-  '/images/meshk-logo-day.png',
-  '/images/meshk-logo-sepia.png',
-  '/images/meshk-logo-dark.png'
+  '/images/og-default.jpg',
+  // 5 Categories
+  '/category/chinta',
+  '/category/pathalap',
+  '/category/itihas',
+  '/category/boi-alochona',
+  '/category/onubad',
+  // All 10 Articles
+  '/bedonadayok-dushongbad-ayesha',
+  '/boi-er-bibhay-alokito-monishi',
+  '/dinlipi-shukrobar-amimul-ihsan',
+  '/gazar-dinlipi',
+  '/haramainer-live',
+  '/kobi-sahityik-howa-lokkho-noy',
+  '/notun-mehman',
+  '/saobaner-dosh-bochhor',
+  '/tahafutul-malahida',
+  '/takhassuser-jibon-shuru'
 ];
 
-// Install: Pre-cache core shell in parallel without blocking on single failure
+// Install: Pre-cache core shell safely without single-failure aborts
 self.addEventListener('install', (event) => {
-  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
-      // 1. Precache Core Shell in parallel
-      await Promise.allSettled(
-        PRECACHE_URLS.map(async (url) => {
-          try {
-            await cache.add(url);
-          } catch (err) {
-            console.warn('[PWA SW] Precache item skipped:', url, err);
-          }
-        })
-      );
-
-      // 2. Precache all published articles dynamically for 100% full offline reading
-      try {
-        const postsRes = await fetch('/api/posts');
-        if (postsRes && postsRes.ok) {
-          const postsData = await postsRes.json();
-          if (postsData && Array.isArray(postsData.posts)) {
-            await Promise.allSettled(
-              postsData.posts.map(async (p) => {
-                if (p && p.slug) {
-                  return cache.add('/' + p.slug).catch(() => {});
-                }
-              })
-            );
-          }
+      for (const url of PRECACHE_URLS) {
+        try {
+          await cache.add(url);
+        } catch (err) {
+          console.warn('[PWA SW] Precache item skip:', url, err);
         }
-      } catch (e) {}
-    })
+      }
+    }).then(() => self.skipWaiting())
   );
 });
 
-// Activate: Enable Navigation Preload, clean up old caches and claim clients immediately
+// Activate: Clean up old caches and claim clients immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    (async () => {
-      if ('navigationPreload' in self.registration) {
-        try {
-          await self.registration.navigationPreload.enable();
-        } catch (e) {}
-      }
-      const keys = await caches.keys();
-      await Promise.all(
+    caches.keys().then((keys) => {
+      return Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
-            console.log('[PWA SW] Purging old cache:', key);
             return caches.delete(key);
           }
         })
       );
-      await self.clients.claim();
-    })()
+    }).then(() => self.clients.claim())
   );
 });
 
-// Fetch: Smart caching strategy optimized for instant app launch & exact article routing
+// Fetch: Smart caching strategy optimized for instant Android app launch & exact article routing
 self.addEventListener('fetch', (event) => {
   const request = event.request;
   const url = new URL(request.url);
 
-  // API routes handling: Offline cache fallback for GET /api/posts, pass-through for mutations
-  if (url.pathname.startsWith('/api')) {
-    if (request.method === 'GET' && url.pathname.startsWith('/api/posts')) {
-      event.respondWith(
-        (async () => {
-          try {
-            const networkResponse = await fetch(request);
+  // Only handle GET requests
+  if (request.method !== 'GET') return;
+
+  // Never cache admin panel
+  if (url.pathname.startsWith('/admin')) return;
+
+  // 1. Navigation requests (HTML pages): Exact Cache-First with Stale-While-Revalidate
+  // Solves Android PWA splash screen freeze & eliminates navigation hijack to '/'
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      (async () => {
+        // 1. Try exact match in cache first (with ignoreSearch: true for homescreen queries)
+        let cachedResponse = await caches.match(request, { ignoreSearch: true });
+
+        // 2. Only if the request is actually for root '/' (or empty), allow fallback to cached '/'
+        const isRootNav = url.pathname === '/' || url.pathname === '';
+        if (!cachedResponse && isRootNav) {
+          cachedResponse = await caches.match('/', { ignoreSearch: true });
+        }
+
+        // 3. Background network fetch to keep cache fresh
+        const networkFetch = fetch(request)
+          .then((networkResponse) => {
             if (networkResponse && networkResponse.status === 200) {
               const clone = networkResponse.clone();
               caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
             }
             return networkResponse;
-          } catch (err) {
-            const cached = await caches.match(request);
-            if (cached) return cached;
-            return new Response(JSON.stringify({ success: true, posts: [] }), {
-              headers: { 'Content-Type': 'application/json' }
-            });
-          }
-        })()
-      );
-      return;
-    }
-    return;
-  }
+          })
+          .catch(async () => {
+            if (cachedResponse) return cachedResponse;
+            const offline = await caches.match('/offline', { ignoreSearch: true });
+            return (
+              offline ||
+              new Response(
+                '<!DOCTYPE html><html lang="bn"><head><meta charset="utf-8"><title>লাবীবের খেরোখাতা</title></head><body style="font-family:sans-serif;text-align:center;padding:40px;"><h2>অফলাইন মোড</h2><p>ইন্টারনেট সংযোগ চেক করুন অথবা পুনরায় লোড করুন।</p></body></html>',
+                {
+                  status: 200,
+                  headers: { 'Content-Type': 'text/html; charset=utf-8' }
+                }
+              )
+            );
+          });
 
-  // Dedicated Network-First with Cache Fallback for Admin Studio (Full Offline Author Studio)
-  if (url.pathname.startsWith('/admin')) {
-    event.respondWith(
-      (async () => {
-        try {
-          const networkResponse = await fetch(request);
-          if (networkResponse && networkResponse.status === 200) {
-            const clone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          }
-          return networkResponse;
-        } catch (err) {
-          const cachedAdmin = await caches.match(request, { ignoreSearch: true }) || await caches.match('/admin', { ignoreSearch: true });
-          if (cachedAdmin) return cachedAdmin;
-          return caches.match('/offline');
-        }
-      })()
-    );
-    return;
-  }
-
-  // 1. Navigation requests (HTML pages): True 0ms Instant Cache-First with Background Revalidation
-  if (request.mode === 'navigate') {
-    event.respondWith(
-      (async () => {
-        // Step A: Instant 0ms Cache Resolution
-        let cachedResponse = await caches.match(request, { ignoreSearch: true });
-        if (!cachedResponse && (url.pathname === '/' || url.pathname === '')) {
-          cachedResponse = await caches.match('/', { ignoreSearch: true });
-        }
-
-        // Step B: Background revalidation fetch (non-blocking, updates cache silently)
-        const backgroundFetchPromise = (async () => {
-          try {
-            let networkResponse = null;
-            if (event.preloadResponse) {
-              networkResponse = await event.preloadResponse;
-            }
-            if (!networkResponse) {
-              const controller = new AbortController();
-              const timeoutId = setTimeout(() => controller.abort(), 3500);
-              networkResponse = await fetch(request, { signal: controller.signal });
-              clearTimeout(timeoutId);
-            }
-            if (networkResponse && networkResponse.status === 200) {
-              const cache = await caches.open(CACHE_NAME);
-              await cache.put(request, networkResponse.clone());
-            }
-            return networkResponse;
-          } catch (e) {
-            return null;
-          }
-        })();
-
-        // CRITICAL 0ms INSTANT PWA LAUNCH:
-        // If cached copy exists, RETURN IT IMMEDIATELY in 0ms!
+        // 4. If cached page exists, return IMMEDIATELY for sub-20ms instant navigation
         if (cachedResponse) {
-          event.waitUntil(backgroundFetchPromise);
+          networkFetch; // run in background
           return cachedResponse;
         }
 
-        // If not in cache (cold first visit), wait for network
-        const networkResponse = await backgroundFetchPromise;
-        if (networkResponse) return networkResponse;
-
-        // Fallback to cached homepage if available
-        const homeFallback = await caches.match('/', { ignoreSearch: true });
-        if (homeFallback) return homeFallback;
-
-        // Final fallback to offline page
-        const offline = await caches.match('/offline', { ignoreSearch: true });
-        return (
-          offline ||
-          new Response(
-            '<!DOCTYPE html><html lang="bn"><head><meta charset="utf-8"><title>লাবীবের খেরোখাতা</title></head><body style="font-family:sans-serif;text-align:center;padding:40px;"><h2>অফলাইন মোড</h2><p>ইন্টারনেট সংযোগ চেক করুন অথবা পুনরায় লোড করুন।</p></body></html>',
-            {
-              status: 200,
-              headers: { 'Content-Type': 'text/html; charset=utf-8' }
-            }
-          )
-        );
+        // 5. If not in cache yet, wait directly for networkFetch (DO NOT fallback to '/'!)
+        try {
+          return await networkFetch;
+        } catch (e) {
+          const offline = await caches.match('/offline', { ignoreSearch: true });
+          return (
+            offline ||
+            new Response(
+              '<!DOCTYPE html><html lang="bn"><head><meta charset="utf-8"><title>লাবীবের খেরোখাতা</title></head><body style="font-family:sans-serif;text-align:center;padding:40px;"><h2>অফলাইন মোড</h2><p>ইন্টারনেট সংযোগ চেক করুন অথবা পুনরায় লোড করুন।</p></body></html>',
+              {
+                status: 200,
+                headers: { 'Content-Type': 'text/html; charset=utf-8' }
+              }
+            )
+          );
+        }
       })()
     );
     return;
   }
 
-  // 2. Static Assets (CSS, JS, Fonts, Icons, Images): Stale-While-Revalidate
+  // 2. Static Assets (CSS, JS, WebFonts, Icons, Images): Stale-While-Revalidate
   if (
     url.pathname.startsWith('/_astro/') ||
     url.pathname.startsWith('/icons/') ||
-    url.pathname.startsWith('/images/') ||
-    url.pathname.endsWith('.webmanifest') ||
     url.pathname.endsWith('.css') ||
     url.pathname.endsWith('.js') ||
     url.pathname.endsWith('.svg') ||
     url.pathname.endsWith('.png') ||
-    url.pathname.endsWith('.jpg') ||
     url.hostname.includes('fonts.googleapis.com') ||
     url.hostname.includes('fonts.gstatic.com')
   ) {
@@ -225,6 +164,7 @@ self.addEventListener('fetch', (event) => {
           .catch(() => null);
 
         if (cached) {
+          fetchPromise; // revalidate in background
           return cached;
         }
 
@@ -236,7 +176,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 3. Fallback
+  // 3. Default fallback: Cache with Network Fallback (Never returns null)
   event.respondWith(
     (async () => {
       const cached = await caches.match(request, { ignoreSearch: true });
@@ -249,11 +189,3 @@ self.addEventListener('fetch', (event) => {
     })()
   );
 });
-
-// Instant update trigger: skip waiting on demand
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
-});
-

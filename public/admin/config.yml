@@ -1,0 +1,78 @@
+backend:
+  name: git-gateway
+  branch: main
+
+# Local development backend switchable
+local_backend: true
+
+media_folder: "public/images/uploads"
+public_folder: "/images/uploads"
+locale: "en"
+
+collections:
+  - name: "posts"
+    label: "সকল লেখা (Articles)"
+    folder: "src/content/posts"
+    create: true
+    slug: "{{slug}}"
+    editor:
+      preview: true
+    fields:
+      - { label: "শিরোনাম (Title)", name: "title", widget: "string" }
+      - { label: "সংক্ষিপ্ত বিবরণ (Excerpt)", name: "description", widget: "text" }
+      - { label: "প্রকাশের তারিখ (Date)", name: "publishedAt", widget: "date", format: "YYYY-MM-DD" }
+      - label: "বিষয়শ্রেণী (Category)"
+        name: "category"
+        widget: "select"
+        options:
+          - { label: "চিন্তা", value: "chinta" }
+          - { label: "পাঠালাপ", value: "pathalap" }
+          - { label: "ইতিহাস", value: "itihas" }
+          - { label: "বই-আলোচনা", value: "boi-alochona" }
+          - { label: "অনুবাদ", value: "onubad" }
+      - { label: "ট্যাগসমূহ (Tags)", name: "tags", widget: "list", default: [] }
+      - { label: "পিন করা লেখা (Pin to Top)", name: "isPinned", widget: "boolean", default: false, required: false }
+      - { label: "পূর্বে প্রকাশিত তথ্য (Previously Published)", name: "previouslyPublished", widget: "string", required: false }
+      - { label: "মূল লেখক (যদি অনুবাদ হয়)", name: "originalAuthor", widget: "string", required: false }
+      - label: "বই-তথ্যবাক্স (Book Info - কেবল বই আলোচনার জন্য)"
+        name: "bookInfo"
+        widget: "object"
+        required: false
+        fields:
+          - { label: "বইয়ের নাম", name: "bookTitle", widget: "string", required: false }
+          - { label: "লেখক", name: "author", widget: "string", required: false }
+          - { label: "প্রকাশনী", name: "publisher", widget: "string", required: false }
+          - { label: "প্রকাশকাল", name: "publishedYear", widget: "string", required: false }
+          - { label: "পৃষ্ঠা সংখ্যা", name: "pages", widget: "string", required: false }
+          - { label: "মূল্যায়ন/ইন্ডিকেটর (যেমন: 'অবশ্যপাঠ্য')", name: "ratingIndicator", widget: "string", required: false }
+          - { label: "সংগ্রহের লিংক", name: "purchaseUrl", widget: "string", required: false }
+      - label: "তথ্যসূত্র ও টীকা (Footnotes)"
+        name: "footnotes"
+        widget: "list"
+        required: false
+        fields:
+          - { label: "আইডি নং (যেমন: 1)", name: "id", widget: "number" }
+          - { label: "উৎস বিবরণ", name: "text", widget: "string" }
+      - { label: "মূল লেখা (Article Body)", name: "body", widget: "markdown" }
+
+  - name: "author"
+    label: "লেখক পরিচিতি ও সেটিংস (Author Bio & Social)"
+    files:
+      - file: "src/data/author.json"
+        label: "আফফান লাবীবের পরিচিতি ও সোশ্যাল হাব"
+        name: "author_info"
+        fields:
+          - { label: "লেখকের নাম", name: "name", widget: "string" }
+          - { label: "সংক্ষিপ্ত পদবি / ট্যাগলাইন", name: "tagline", widget: "string" }
+          - { label: "শিক্ষাগত পটভূমি / উপাধি", name: "education", widget: "string" }
+          - { label: "হোমপেজের সংক্ষিপ্ত পরিচিতি", name: "bioShort", widget: "text" }
+          - { label: "সম্পূর্ণ জীবনী (About Page Bio)", name: "bioFull", widget: "markdown" }
+          - { label: "প্রোফাইল ছবি", name: "avatar", widget: "image", default: "/images/affan-labib.jpg" }
+          - label: "সোশ্যাল ও যোগাযোগ লিংক"
+            name: "social"
+            widget: "object"
+            fields:
+              - { label: "ফেসবুক প্রোফাইল লিংক", name: "facebook", widget: "string" }
+              - { label: "হোয়াটসঅ্যাপ লিংক (wa.me/...)", name: "whatsapp", widget: "string" }
+              - { label: "হোয়াটসঅ্যাপ নম্বর (যেমন: 01577118153)", name: "whatsappNumber", widget: "string" }
+              - { label: "ইমেইল ঠিকানা", name: "email", widget: "string" }

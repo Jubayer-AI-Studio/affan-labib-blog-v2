@@ -1,52 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /admin/
 
-# Direct AI Search Crawlers & LLM Grounding (ChatGPT, Perplexity, Claude, Gemini, Copilot)
-User-agent: GPTBot
-Allow: /
-
-User-agent: ChatGPT-User
-Allow: /
-
-User-agent: PerplexityBot
-Allow: /
-
-User-agent: ClaudeBot
-Allow: /
-
-User-agent: anthropic-ai
-Allow: /
-
-User-agent: Google-Extended
-Allow: /
-
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Applebot
-Allow: /
-
-# Social Media Preview Crawlers
-User-agent: facebookexternalhit
-Allow: /
-
-User-agent: Facebot
-Allow: /
-
-User-agent: WhatsApp
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: TelegramBot
-Allow: /
-
-User-agent: LinkedInBot
-Allow: /
-
-# Official XML Sitemap
-Sitemap: https://affan-labib-blog.vercel.app/sitemap.xml
+Sitemap: https://affanlabib.me/sitemap.xml

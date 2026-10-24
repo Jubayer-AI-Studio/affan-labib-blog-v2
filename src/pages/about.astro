@@ -1,109 +1,110 @@
 ---
 // src/pages/about.astro
-import Layout from '../layouts/Layout.astro';
-import ThemeAvatar from '../components/ThemeAvatar.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
 import author from '../data/author.json';
 ---
 
-<Layout
-  title="লেখক পরিচিতি - আফফান লাবীব | Affan Labib Biography (লাবীবের খেরোখাতা)"
-  description="আফফান লাবীব (Affan Labib)-এর জীবনী, পড়াশোনা, সাহিত্য দর্শন ও 'লাবীবের খেরোখাতা' (Labib er Kherokhata) রচনার প্রেক্ষাপট।"
+<BaseLayout
+  title={`আমার সম্পর্কে | ${author.name}`}
+  description={`${author.name} - ${author.tagline}। সংক্ষিপ্ত পরিচয়, চিন্তা ও এই পাঠশালার প্রেক্ষাপট।`}
 >
-  <div class="max-w-3xl mx-auto space-y-12">
-    <!-- Header -->
-    <header class="border-b border-paper-border/80 dark:border-night-border/80 pb-6">
-      <div class="inline-flex items-center gap-1.5 text-xs font-sans font-semibold text-paper-accent dark:text-night-accent uppercase tracking-wider mb-2">
-        <a href="/" class="hover:underline">প্রধান পাতা</a>
-        <span>/</span>
-        <span>লেখক পরিচিতি</span>
-      </div>
-      <h1 class="text-3xl sm:text-4xl font-bold font-serif text-paper-text dark:text-night-text tracking-tight mb-2">
-        আফফান লাবীব <span class="text-xl sm:text-2xl font-sans font-normal text-paper-muted dark:text-night-muted">(Affan Labib)</span>
-      </h1>
-      <p class="text-base text-paper-muted dark:text-night-muted font-serif">
-        {author.tagline} · লাবীবের খেরোখাতা (Labib er Kherokhata)
-      </p>
-    </header>
-
-    <!-- Profile Overview Card -->
-    <section class="rounded-3xl border border-paper-border/90 dark:border-night-border/90 bg-paper-surface/85 dark:bg-night-surface/85 backdrop-blur-xl p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row items-center sm:items-start gap-6">
-      <ThemeAvatar
-        class="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl shadow-md shrink-0 ring-2 ring-paper-accent/30"
-        alt="আফফান লাবীব"
+  <div class="max-w-2xl mx-auto font-serif space-y-10 rounded-3xl border border-paper-border/70 dark:border-night-border/70 bg-paper-surface/85 dark:bg-night-surface/85 backdrop-blur-xl p-6 sm:p-10 shadow-sm">
+    <!-- Header with Author Portrait -->
+    <header class="border-b border-paper-border/80 dark:border-night-border/80 pb-8 flex flex-col sm:flex-row items-center sm:items-start gap-6">
+      <img
+        src={author.avatar}
+        alt={author.name}
+        class="author-avatar-img w-28 h-28 sm:w-32 sm:h-32 rounded-2xl object-cover border-2 border-paper-accent/30 dark:border-night-accent/30 shadow-md flex-shrink-0"
       />
-
-      <div class="space-y-3 text-center sm:text-left">
-        <h2 class="text-2xl font-bold font-serif text-paper-text dark:text-night-text author-name-text">
-          {author.name} <span class="text-lg font-sans font-normal text-paper-muted dark:text-night-muted">(Affan Labib)</span>
-        </h2>
-        <p class="text-xs font-sans text-paper-accent dark:text-night-accent font-semibold author-edu-text">
+      <div class="space-y-2 text-center sm:text-left flex-grow">
+        <div class="text-xs font-sans text-paper-accent dark:text-night-accent font-semibold tracking-wider uppercase">
+          পরিচিতি ও পটভূমি
+        </div>
+        <h1 class="author-name-text text-3xl sm:text-4xl font-bold text-paper-text dark:text-night-text leading-tight">
+          {author.name}
+        </h1>
+        <p class="author-edu-text text-base text-paper-accent dark:text-night-accent font-medium font-serif">
           {author.education}
         </p>
-        <p class="text-sm font-serif text-paper-muted dark:text-night-muted leading-relaxed author-shortbio-text">
-          {author.bioShort}
+        <p class="author-tagline-text text-sm text-paper-muted dark:text-night-muted font-sans">
+          {author.tagline}
         </p>
       </div>
-    </section>
+    </header>
 
-    <!-- Full Bio & Manifesto -->
-    <section class="space-y-6">
-      <h2 class="text-2xl font-bold font-serif text-paper-text dark:text-night-text author-manifesto-title-text">
-        {author.aboutManifestoTitle}
-      </h2>
-      <p class="text-base sm:text-lg text-paper-text/90 dark:text-night-text/90 font-serif leading-relaxed author-manifesto-text">
-        {author.aboutManifesto}
-      </p>
-      <p class="text-base sm:text-lg text-paper-text/90 dark:text-night-text/90 font-serif leading-relaxed author-biofull-text">
+    <!-- Body Story -->
+    <div class="prose prose-lg dark:prose-invert text-paper-text dark:text-night-text leading-relaxed space-y-6">
+      <p class="author-biofull-text">
         {author.bioFull}
       </p>
-    </section>
 
-    <!-- Content Sections Summary -->
-    <section class="space-y-4 pt-4 border-t border-paper-border/60 dark:border-night-border/60">
-      <h3 class="text-xl font-bold font-serif text-paper-text dark:text-night-text">
-        এখানে মূলত যা পাবেন:
-      </h3>
-      <ul class="space-y-2 text-sm sm:text-base font-serif text-paper-muted dark:text-night-muted list-disc list-inside">
-        <li><strong>চিন্তা (Chinta):</strong> প্রাত্যহিক জীবনের সরল পর্যবেক্ষণ ও অন্তর্দৃষ্টিমূলক ভাবনা।</li>
-        <li><strong>পাঠালাপ (Pathalap):</strong> বই পড়ার মধ্য দিয়ে অর্জিত উপলব্ধি ও প্রাসঙ্গিক আলোচনা।</li>
-        <li><strong>ইতিহাস (Itihas):</strong> মুসলিম ইতিহাস, মনীষীদের জীবন ও ঐতিহ্যের স্মৃতিকথা।</li>
-        <li><strong>বই-আলোচনা (Book Reviews):</strong> পছন্দের বইগুলোর সংক্ষিপ্ত পাঠপ্রতিক্রিয়া ও মূল্যায়ন।</li>
-        <li><strong>অনুবাদ (Translations):</strong> ধ্রুপদী আরবি ও অন্যান্য ভাষার সমৃদ্ধ সাহিত্যের অনুবাদ।</li>
-      </ul>
-    </section>
-
-    <!-- Contact & Social Links -->
-    <section class="p-6 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-surface/60 dark:bg-night-surface/60 space-y-4">
-      <h3 class="text-lg font-bold font-serif text-paper-text dark:text-night-text">
-        সরাসরি যোগাযোগ
-      </h3>
-      <p class="text-xs font-sans text-paper-muted dark:text-night-muted">
-        কোনো লেখা নিয়ে মতবিনিময়, পরামর্শ বা যোগাযোগের জন্য নিচের লিঙ্কগুলো ব্যবহার করতে পারেন:
+      <h2 class="author-manifesto-title-text text-2xl font-bold font-serif text-paper-text dark:text-night-text mt-8 mb-4">
+        {author.aboutManifestoTitle || "কেন এই পড়ার ঘর?"}
+      </h2>
+      <p class="author-manifesto-text">
+        {author.aboutManifesto || "এই ওয়েবসাইটটি কোনো বাণিজ্যিক পোর্টাল বা একাডেমিক গবেষণাপত্র প্রকাশের জায়গা নয়। এটি আমার ব্যক্তিগত খাতা। পড়তে পড়তে যেসব প্রশ্ন আমাকে তাড়া করে ফেরে, ইতিহাসের যেসব বাঁক দেখে আমি থমকে দাঁড়াই, কিংবা কোনো বই পড়ে মনে যে মুগ্ধতা বা সংশয় তৈরি হয়—সেগুলোই আমি এখানে সরল ভাষায় নথিভুক্ত করি।"}
       </p>
-      <div class="flex flex-wrap items-center gap-3 text-xs font-sans">
-        <a
-          href={author.social.facebook}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="px-3 py-2 rounded-xl bg-blue-600/10 text-blue-700 dark:text-blue-400 border border-blue-600/20 hover:bg-blue-600 hover:text-white transition-colors"
-        >
-          Facebook প্রোফাইল ↗
-        </a>
-        <a
-          href={author.social.whatsapp}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="px-3 py-2 rounded-xl bg-emerald-600/10 text-emerald-700 dark:text-emerald-400 border border-emerald-600/20 hover:bg-emerald-600 hover:text-white transition-colors"
-        >
-          WhatsApp ({author.social.whatsappNumber}) ↗
-        </a>
-        <a
-          href={`mailto:${author.social.email}`}
-          class="px-3 py-2 rounded-xl border border-paper-border dark:border-night-border text-paper-text dark:text-night-text hover:border-paper-accent transition-colors"
-        >
-          ইমেইল: {author.social.email}
-        </a>
+
+      <div class="my-8 p-6 rounded-lg bg-paper-border/20 dark:bg-night-border/30 border-l-4 border-paper-accent dark:border-night-accent space-y-3 not-prose font-serif">
+        <h3 class="font-bold text-lg text-paper-text dark:text-night-text">
+          এখানে মূলত যা পাবেন:
+        </h3>
+        <ul class="space-y-2 text-sm sm:text-base text-paper-muted dark:text-night-muted list-disc list-inside">
+          <li><strong>চিন্তা:</strong> জীবনের সাধারণ বিষয় নিয়ে ব্যক্তিগত আত্মানুসন্ধান ও মনন।</li>
+          <li><strong>পাঠালাপ:</strong> বইয়ের ভেতর দিয়ে লেখক ও পাঠকের নীরব আলাপচারিতা।</li>
+          <li><strong>ইতিহাস:</strong> অতীত জনপদ, মনীষী ও ইতিহাসের অজানা অধ্যায়।</li>
+          <li><strong>বই-আলোচনা:</strong> সমকালীন ও চিরায়ত বইয়ের মননশীল মূল্যায়ন।</li>
+          <li><strong>অনুবাদ:</strong> আরবি, ইংরেজি বা অন্যান্য ভাষার চিন্তাশীল রচনার মার্জিত রূপান্তর।</li>
+        </ul>
       </div>
-    </section>
+
+      <h2 class="text-2xl font-bold font-serif text-paper-text dark:text-night-text mt-8 mb-4">
+        সরাসরি যোগাযোগ
+      </h2>
+      <p>
+        যেকোনো লেখার ব্যাপারে আপনার নিজস্ব মতামত, কোনো প্রশ্ন বা আলোচনার আগ্রহ থাকলে সরাসরি যুক্ত হতে পারেন। আপনার যেকোনো পাঠ-প্রতিক্রিয়া আমার কাছে পরম আনন্দের।
+      </p>
+    </div>
+
+    <!-- Active Social & Contact Hub -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 not-prose font-sans text-sm">
+      <!-- Facebook Profile Card -->
+      <a
+        href={author.social.facebook}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="author-facebook-link p-4 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface hover:border-blue-600 hover:shadow-xs transition-all flex items-center gap-3.5 group"
+      >
+        <div class="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center font-bold text-lg group-hover:scale-105 transition-transform">
+          f
+        </div>
+        <div>
+          <div class="text-xs text-paper-muted dark:text-night-muted">ফেসবুক প্রোফাইল</div>
+          <div class="font-semibold text-paper-text dark:text-night-text group-hover:text-blue-600 transition-colors">
+            ফেসবুকে যুক্ত হন ↗
+          </div>
+        </div>
+      </a>
+
+      <!-- WhatsApp Direct Card -->
+      <a
+        href={author.social.whatsapp}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="author-whatsapp-link p-4 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface hover:border-emerald-600 hover:shadow-xs transition-all flex items-center gap-3.5 group"
+      >
+        <div class="w-10 h-10 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center group-hover:scale-105 transition-transform">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.007c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.275.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.043.073.043.419-.101.824z" />
+          </svg>
+        </div>
+        <div>
+          <div class="text-xs text-paper-muted dark:text-night-muted">হোয়াটসঅ্যাপ বার্তা</div>
+          <div class="font-semibold text-paper-text dark:text-night-text group-hover:text-emerald-600 transition-colors">
+            {author.social.whatsappNumber} ↗
+          </div>
+        </div>
+      </a>
+    </div>
   </div>
-</Layout>
+</BaseLayout>
