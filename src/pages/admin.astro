@@ -1377,6 +1377,9 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
       const author = JSON.parse(document.getElementById('server-author-data')?.textContent || '{}');
       const initialBookshelf = JSON.parse(document.getElementById('server-bookshelf-data')?.textContent || '{}');
 
+      const serverInteractionsEl = document.getElementById('server-interactions-data');
+      let currentInteractionsData = serverInteractionsEl ? JSON.parse(serverInteractionsEl.textContent || '{"stats":{},"comments":[]}') : { stats: {}, comments: [] };
+
       // 2. Client-Side Resilience & Cloud DB Sync
       function getCustomPosts() {
         try {
@@ -2971,8 +2974,7 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
       const adminCommentsFeedBadge = document.getElementById('admin-comments-feed-badge');
       const refreshInteractionsBtn = document.getElementById('refresh-interactions-btn');
 
-      const serverInteractionsEl = document.getElementById('server-interactions-data');
-      let currentInteractionsData = serverInteractionsEl ? JSON.parse(serverInteractionsEl.textContent || '{"stats":{},"comments":[]}') : { stats: {}, comments: [] };
+      // serverInteractionsEl and currentInteractionsData already initialized above
 
       async function loadInteractionsData() {
         try {
