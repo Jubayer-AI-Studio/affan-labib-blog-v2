@@ -286,8 +286,18 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
               </h3>
               <span class="text-xs font-sans text-paper-muted">যেকোনো লেখা পড়তে বা পরিবর্তন করতে ক্লিক করুন</span>
             </div>
-            <div class="text-xs font-sans text-paper-muted">
-              মোট <span id="current-folder-count" class="font-bold text-paper-accent dark:text-night-accent">{posts.length}</span> টি রচনা
+            <div class="flex items-center gap-3">
+              <button
+                id="explorer-new-post-btn"
+                type="button"
+                class="px-3.5 py-1.5 rounded-xl bg-paper-accent text-white font-sans text-xs font-semibold hover:opacity-90 transition-all cursor-pointer shadow-xs flex items-center gap-1.5"
+              >
+                <span>✍️</span>
+                <span>নতুন রচনা লিখুন</span>
+              </button>
+              <div class="text-xs font-sans text-paper-muted">
+                মোট <span id="current-folder-count" class="font-bold text-paper-accent dark:text-night-accent">{posts.length}</span> টি রচনা
+              </div>
             </div>
           </div>
 
@@ -318,7 +328,7 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
                   </div>
                 </div>
 
-                <div class="flex items-center gap-2 shrink-0 pt-2 border-t border-paper-border/40 sm:border-t-0 sm:pt-0">
+                <div class="flex flex-wrap items-center gap-2 shrink-0 pt-2 border-t border-paper-border/40 sm:border-t-0 sm:pt-0 w-full sm:w-auto">
                   <button
                     type="button"
                     class="toggle-pin-btn px-3 py-2 rounded-xl border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-800 dark:text-amber-300 text-xs font-sans font-medium transition-all cursor-pointer flex items-center justify-center gap-1"
@@ -345,15 +355,22 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
                     <span>পড়ুন</span>
                     <span>↗</span>
                   </a>
-                  <button
-                    type="button"
-                    class="delete-post-btn px-3 py-2 rounded-xl border border-red-300 dark:border-red-800/60 bg-red-500/10 hover:bg-red-600 text-red-600 hover:text-white text-xs font-sans font-medium transition-all cursor-pointer flex items-center justify-center gap-1"
-                    data-slug={post.slug}
-                    title="স্থায়ীভাবে লেখাটি মুছে ফেলুন"
-                  >
-                    <span>🗑️</span>
-                    <span>মুছুন</span>
-                  </button>
+                  <div class="del-post-wrap inline-flex items-center gap-1">
+                    <button
+                      type="button"
+                      class="delete-post-btn px-3 py-2 rounded-xl border border-red-300 dark:border-red-800/60 bg-red-500/10 hover:bg-red-600 text-red-600 hover:text-white text-xs font-sans font-medium transition-all cursor-pointer flex items-center justify-center gap-1"
+                      data-slug={post.slug}
+                      title="স্থায়ীভাবে লেখাটি মুছে ফেলুন"
+                    >
+                      <span>🗑️</span>
+                      <span>মুছুন</span>
+                    </button>
+                    <div class="confirm-del-post-box hidden flex items-center gap-1.5 bg-rose-500/15 px-2.5 py-1 rounded-xl border border-rose-500/30">
+                      <span class="text-[11px] font-sans font-semibold text-rose-700 dark:text-rose-400">মুছবেন?</span>
+                      <button type="button" class="confirm-del-post-yes-btn px-2.5 py-1 rounded-lg bg-rose-600 text-white font-bold text-xs hover:bg-rose-700 cursor-pointer shadow-2xs" data-slug={post.slug}>হ্যাঁ</button>
+                      <button type="button" class="confirm-del-post-no-btn px-2 py-1 rounded-lg text-paper-muted hover:text-paper-text text-xs cursor-pointer">না</button>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -1597,10 +1614,26 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
       });
 
       // Quick Nav Buttons
-      document.getElementById('quick-new-post-btn')?.addEventListener('click', () => {
+      function startNewDraft() {
+        if (editorTitle) editorTitle.value = '';
+        if (editorCat) editorCat.value = 'chinta';
+        if (editorDate) editorDate.value = new Date().toISOString().split('T')[0];
+        if (editorDesc) editorDesc.value = '';
+        if (editorTags) editorTags.value = '';
+        if (editorPinned) editorPinned.checked = false;
+        if (editorBody) editorBody.value = '';
+        writerFootnotes = [];
+        renderFootnotesEditor();
+        updateLivePreview();
+
         document.getElementById('tab-btn-writer')?.click();
-        document.getElementById('editor-title')?.focus();
-      });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        setTimeout(() => { if (editorTitle) editorTitle.focus(); }, 150);
+        if (window.showAdminToast) window.showAdminToast('খসড়া পাতা পরিষ্কার ও প্রস্তুত করা হয়েছে।');
+      }
+
+      document.getElementById('quick-new-post-btn')?.addEventListener('click', startNewDraft);
+      document.getElementById('explorer-new-post-btn')?.addEventListener('click', startNewDraft);
 
       document.getElementById('quick-new-folder-btn')?.addEventListener('click', () => {
         document.getElementById('tab-btn-menu')?.click();
@@ -1674,7 +1707,7 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
                 </span>
               </div>
             </div>
-            <div class="flex items-center gap-2 shrink-0 pt-2 border-t border-paper-border/40 sm:border-t-0 sm:pt-0">
+            <div class="flex flex-wrap items-center gap-2 shrink-0 pt-2 border-t border-paper-border/40 sm:border-t-0 sm:pt-0 w-full sm:w-auto">
               <button
                 type="button"
                 class="toggle-pin-btn px-3 py-2 rounded-xl border ${isPinned ? 'border-amber-500/60 bg-amber-500/25 text-amber-950 dark:text-amber-100 font-bold shadow-2xs' : 'border-paper-border hover:border-amber-500/40 bg-paper-surface hover:bg-amber-500/10 text-paper-muted hover:text-amber-800 dark:hover:text-amber-300 font-medium'} text-xs font-sans transition-all cursor-pointer flex items-center justify-center gap-1.5"
@@ -1701,15 +1734,22 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
                 <span>পড়ুন</span>
                 <span>↗</span>
               </a>
-              <button
-                type="button"
-                class="delete-post-btn px-3 py-2 rounded-xl border border-red-300 dark:border-red-800/60 bg-red-500/10 hover:bg-red-600 text-red-600 hover:text-white text-xs font-sans font-medium transition-all cursor-pointer flex items-center justify-center gap-1"
-                data-slug="${post.slug}"
-                title="স্থায়ীভাবে লেখাটি মুছে ফেলুন"
-              >
-                <span>🗑️</span>
-                <span>মুছুন</span>
-              </button>
+              <div class="del-post-wrap inline-flex items-center gap-1">
+                <button
+                  type="button"
+                  class="delete-post-btn px-3 py-2 rounded-xl border border-red-300 dark:border-red-800/60 bg-red-500/10 hover:bg-red-600 text-red-600 hover:text-white text-xs font-sans font-medium transition-all cursor-pointer flex items-center justify-center gap-1"
+                  data-slug="${post.slug}"
+                  title="স্থায়ীভাবে লেখাটি মুছে ফেলুন"
+                >
+                  <span>🗑️</span>
+                  <span>মুছুন</span>
+                </button>
+                <div class="confirm-del-post-box hidden flex items-center gap-1.5 bg-rose-500/15 px-2.5 py-1 rounded-xl border border-rose-500/30">
+                  <span class="text-[11px] font-sans font-semibold text-rose-700 dark:text-rose-400">মুছবেন?</span>
+                  <button type="button" class="confirm-del-post-yes-btn px-2.5 py-1 rounded-lg bg-rose-600 text-white font-bold text-xs hover:bg-rose-700 cursor-pointer shadow-2xs" data-slug="${post.slug}">হ্যাঁ</button>
+                  <button type="button" class="confirm-del-post-no-btn px-2 py-1 rounded-lg text-paper-muted hover:text-paper-text text-xs cursor-pointer">না</button>
+                </div>
+              </div>
             </div>
           `;
           fileListContainer.appendChild(row);
@@ -2001,7 +2041,9 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
 
             // Switch to writer tab
             document.getElementById('tab-btn-writer')?.click();
-            if (window.showAdminToast) window.showAdminToast(`'${post.title}' সম্পাদনা ডেস্কে লোড হয়েছে।`);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(() => { if (editorTitle) editorTitle.focus(); }, 150);
+            if (window.showAdminToast) window.showAdminToast(`✓ '${post.title}' সম্পাদনা ডেস্কে লোড হয়েছে।`);
           });
         });
       }
@@ -2070,90 +2112,109 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
       }
 
       function attachDeleteListeners() {
+        // 1. Delete button clicked -> show inline confirmation box
         document.querySelectorAll('.delete-post-btn').forEach((btn) => {
           if (btn.getAttribute('data-delete-bound')) return;
           btn.setAttribute('data-delete-bound', 'true');
 
-          btn.addEventListener('click', async () => {
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const wrap = btn.closest('.del-post-wrap');
+            const confirmBox = wrap ? wrap.querySelector('.confirm-del-post-box') : null;
+            if (confirmBox) {
+              btn.classList.add('hidden');
+              btn.style.display = 'none';
+              confirmBox.classList.remove('hidden');
+              confirmBox.style.display = 'flex';
+            }
+          });
+        });
+
+        // 2. Cancel delete ("না") -> bring back delete button
+        document.querySelectorAll('.confirm-del-post-no-btn').forEach((btn) => {
+          if (btn.getAttribute('data-del-no-bound')) return;
+          btn.setAttribute('data-del-no-bound', 'true');
+
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const wrap = btn.closest('.del-post-wrap');
+            const deleteBtn = wrap ? wrap.querySelector('.delete-post-btn') : null;
+            const confirmBox = wrap ? wrap.querySelector('.confirm-del-post-box') : null;
+            if (confirmBox) {
+              confirmBox.classList.add('hidden');
+              confirmBox.style.display = 'none';
+            }
+            if (deleteBtn) {
+              deleteBtn.classList.remove('hidden');
+              deleteBtn.style.display = '';
+            }
+          });
+        });
+
+        // 3. Confirm delete ("হ্যাঁ") -> permanent deletion from Cloud & Local
+        document.querySelectorAll('.confirm-del-post-yes-btn').forEach((btn) => {
+          if (btn.getAttribute('data-del-yes-bound')) return;
+          btn.setAttribute('data-del-yes-bound', 'true');
+
+          btn.addEventListener('click', async (e) => {
+            e.preventDefault();
             const slug = btn.getAttribute('data-slug');
             if (!slug) return;
 
             const row = btn.closest('.file-row');
-            const title = row?.querySelector('.font-serif.font-semibold span:last-child')?.innerText || slug;
+            const titleEl = row?.querySelector('.font-serif.font-bold') || row?.querySelector('.truncate');
+            const title = titleEl ? titleEl.textContent.trim().replace(/^📄|📌/g, '').trim() : slug;
 
-            if (!confirm(`আপনি কি নিশ্চিত যে "${title}" লেখাটি স্থায়ীভাবে মুছে ফেলতে চান?`)) {
-              return;
-            }
+            btn.disabled = true;
+            btn.innerHTML = '⏳';
 
-            // Animate out and remove from DOM
-            row?.classList.add('opacity-0', 'scale-95');
-            setTimeout(() => row?.remove(), 200);
-
-            // Update in-memory posts
-            const idx = serializedPosts.findIndex((p) => p.slug === slug);
-            if (idx !== -1) serializedPosts.splice(idx, 1);
-
-            // Persist deletion to localStorage
             try {
-              const currentCustom = getCustomPosts().filter((p) => p.slug !== slug);
-              localStorage.setItem('kherokhata_custom_posts', JSON.stringify(currentCustom));
+              // 1. Delete from Server API
+              const res = await fetch('/api/posts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'delete', slug })
+              });
+              const data = await res.json();
 
-              const delList = getDeletedSlugs();
-              if (!delList.includes(slug)) {
-                delList.push(slug);
-                localStorage.setItem('kherokhata_deleted_posts', JSON.stringify(delList));
+              if (res.ok && data.success) {
+                // Animate out and remove from DOM
+                if (row) {
+                  row.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                  row.style.opacity = '0';
+                  row.style.transform = 'scale(0.92) translateY(-10px)';
+                  setTimeout(() => row.remove(), 320);
+                }
+
+                // Update in-memory posts
+                const idx = serializedPosts.findIndex((p) => p.slug === slug);
+                if (idx !== -1) serializedPosts.splice(idx, 1);
+
+                // Update localStorage
+                const currentCustom = getCustomPosts().filter((p) => p.slug !== slug);
+                localStorage.setItem('kherokhata_custom_posts', JSON.stringify(currentCustom));
+
+                const delList = getDeletedSlugs();
+                if (!delList.includes(slug)) {
+                  delList.push(slug);
+                  localStorage.setItem('kherokhata_deleted_posts', JSON.stringify(delList));
+                }
+
+                updateFolderBadges();
+                if (window.showAdminToast) {
+                  window.showAdminToast(`✓ "${title}" রচনাটি সফলভাবে মুছে ফেলা হয়েছে! 🗑️`);
+                }
+              } else {
+                throw new Error(data.message || 'লেখা মুছতে সমস্যা হয়েছে');
               }
-              window.dispatchEvent(new CustomEvent('kherokhata-posts-sync', { detail: { deletedSlug: slug } }));
-            } catch (e) {}
-
-            updateFolderBadges();
-            renderFileList();
-
-            // Send real DELETE to API or Enqueue for Offline Sync
-            let deleteSynced = false;
-            if (navigator.onLine) {
-              try {
-                const delRes = await fetch('/api/posts', {
-                  method: 'DELETE',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ slug })
-                });
-                if (delRes.ok) deleteSynced = true;
-              } catch (e) {
-                console.warn('[Admin] DELETE API error:', e);
+            } catch (err) {
+              console.error('[Admin] Delete post error:', err);
+              btn.disabled = false;
+              btn.innerHTML = 'হ্যাঁ';
+              if (window.showAdminToast) {
+                window.showAdminToast('⚠️ লেখা মুছতে সমস্যা হয়েছে: ' + (err.message || err));
               }
             }
-
-            if (!deleteSynced) {
-              try {
-                const delQueue = JSON.parse(localStorage.getItem('kherokhata_offline_delete_queue') || '[]');
-                if (!delQueue.includes(slug)) delQueue.push(slug);
-                localStorage.setItem('kherokhata_offline_delete_queue', JSON.stringify(delQueue));
-              } catch (e) {}
-            }
-
-            // Remove from offline post queue if it was queued for upload
-            try {
-              const postQueue = JSON.parse(localStorage.getItem('kherokhata_offline_queue') || '[]');
-              const filteredPostQueue = postQueue.filter((p) => p.slug !== slug);
-              localStorage.setItem('kherokhata_offline_queue', JSON.stringify(filteredPostQueue));
-              updateOfflineQueueBadge();
-            } catch (e) {}
-
-            // Purge Reader HTML & API Cache so changes are instantly reflected on refresh
-            if ('caches' in window) {
-              caches.keys().then((names) => {
-                names.forEach((name) => {
-                  caches.open(name).then((c) => {
-                    c.delete('/');
-                    c.delete('/api/posts');
-                    c.delete(`/${slug}`);
-                  });
-                });
-              }).catch(() => {});
-            }
-
-            if (window.showAdminToast) window.showAdminToast(`'${title}' সফলভাবে মুছে ফেলা হয়েছে! ✓`);
           });
         });
       }
