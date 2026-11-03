@@ -1,8 +1,8 @@
 # আফফান লাবীব — খেরোখাতা (Affan Labib's Literary Haven)
 
 > **চিন্তা ও পাঠের নিভৃত আঙিনা**  
-> লাইভ ওয়েবসাইট: [affan-labib-blog.vercel.app](https://affan-labib-blog.vercel.app)  
-> গিটহাব রিপোজিটরি: [github.com/Jubayer-AI-Studio/affan-labib-blog](https://github.com/Jubayer-AI-Studio/affan-labib-blog)
+> লাইভ ওয়েবসাইট: [affan-labib-blog-v2.vercel.app](https://affan-labib-blog-v2.vercel.app)  
+> গিটহাব রিপোজিটরি: [github.com/Jubayer-AI-Studio/affan-labib-blog-v2](https://github.com/Jubayer-AI-Studio/affan-labib-blog-v2)
 
 ---
 
