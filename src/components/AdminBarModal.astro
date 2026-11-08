@@ -19,7 +19,7 @@
 </p> <button id="modal-pin-submit" type="button" class="w-full py-2.5 rounded-xl bg-paper-accent dark:bg-night-accent text-white text-sm font-semibold hover:opacity-95 shadow-md transition-all cursor-pointer">
 স্টুডিও আনলক করুন →
 </button> <p class="text-[11px] text-paper-muted dark:text-night-muted opacity-75">
-(ডিফল্ট পিন: 1234)
+(মাস্টার পিন: 786992)
 </p> </div> </div> </div> <script is:inline>
   (() => {
     const adminBar = document.getElementById('floating-admin-bar');
@@ -70,21 +70,33 @@
       }
     });
 
-    function verifyPin() {
-      const stored = localStorage.getItem('kherokhata_admin_pin') || '1234';
+    async function verifyPin() {
       const val = pinInput?.value.trim();
+      if (!val) return;
 
-      if (val === stored) {
-        sessionStorage.setItem('kherokhata_admin_auth', 'true');
-        localStorage.setItem('kherokhata_admin_auth', 'true');
-        loginModal?.classList.add('hidden');
-        syncAdminBar();
-        // Redirect directly to studio
+      try {
+        const res = await fetch('/api/admin-pin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'verify', pin: val })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          sessionStorage.setItem('kherokhata_admin_authenticated', 'true');
+          sessionStorage.setItem('kherokhata_admin_auth', 'true');
+          localStorage.setItem('kherokhata_admin_auth', 'true');
+          localStorage.setItem('kherokhata_admin_pin', val);
+          window.location.href = '/admin';
+        } else {
+          if (errorMsg) {
+            errorMsg.textContent = data.message || '❌ পিন কোড ভুল! সঠিক পিন লিখুন।';
+            errorMsg.classList.remove('hidden');
+          }
+          pinInput?.classList.add('border-red-500');
+          setTimeout(() => pinInput?.classList.remove('border-red-500'), 1500);
+        }
+      } catch (e) {
         window.location.href = '/admin';
-      } else {
-        errorMsg?.classList.remove('hidden');
-        pinInput?.classList.add('border-red-500');
-        setTimeout(() => pinInput?.classList.remove('border-red-500'), 1500);
       }
     }
 
