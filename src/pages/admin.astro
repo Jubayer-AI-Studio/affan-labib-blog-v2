@@ -137,14 +137,7 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
       >
         💬 পাঠক প্রতিক্রিয়া
       </button>
-      <button
-        id="tab-btn-settings"
-        type="button"
-        class="admin-tab-btn px-4 py-2.5 rounded-2xl font-medium transition-all border border-paper-border dark:border-night-border bg-paper-surface/60 dark:bg-night-surface/60 text-paper-muted dark:text-night-muted hover:text-paper-text cursor-pointer whitespace-nowrap"
-        data-tab="tab-settings"
-      >
-        🔒 পিন ও লক সেটিংস
-      </button>
+      
     </nav>
 
     <!-- ======================================================== -->
@@ -1058,60 +1051,7 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
 
     <!-- TAB 6: Cloud Database & Sync Status -->
     <!-- ======================================================== -->
-    <section id="tab-settings" class="admin-tab-content hidden space-y-6">
-      <div class="max-w-lg mx-auto rounded-3xl border border-paper-border/80 dark:border-night-border/80 bg-paper-surface/95 dark:bg-night-surface/95 p-6 sm:p-8 shadow-xs space-y-6">
-        <div class="text-center space-y-2">
-          <div class="w-14 h-14 mx-auto rounded-2xl bg-amber-500/10 text-amber-700 dark:text-amber-400 flex items-center justify-center text-2xl border border-amber-500/20">
-            <span>🔒</span>
-          </div>
-          <h3 class="text-xl font-bold font-serif text-paper-text dark:text-night-text">
-            স্টুডিও নিরাপত্তা ও পিন পরিবর্তন
-          </h3>
-          <p class="text-xs text-paper-muted dark:text-night-muted font-serif leading-relaxed">
-            লেখক ছাড়া অন্য কেউ যেন স্টুডিওতে প্রবেশ করতে না পারে, সেজন্য আপনার গোপন পিন কোড এখান থেকে পরিবর্তন করতে পারেন।
-          </p>
-        </div>
-
-        <div class="space-y-4 pt-2">
-          <div class="p-4 rounded-2xl border border-paper-border/70 dark:border-night-border/70 bg-paper-bg/50 dark:bg-night-bg/50 space-y-3">
-            <label for="new-pin-input" class="block text-xs font-sans font-semibold text-paper-text dark:text-night-text">
-              নতুন পিন কোড লিখুন (৪-৮ ডিজিট):
-            </label>
-            <div class="flex items-center gap-2">
-              <input
-                id="new-pin-input"
-                type="password"
-                maxlength="8"
-                placeholder="নতুন পিন দিন..."
-                autocomplete="off"
-                class="flex-grow px-4 py-2.5 rounded-xl border border-paper-border dark:border-night-border bg-paper-surface dark:bg-night-surface text-sm font-mono text-paper-text dark:text-night-text focus:outline-none focus:ring-2 focus:ring-paper-accent"
-              />
-              <button
-                id="save-new-pin-btn"
-                type="button"
-                class="px-5 py-2.5 rounded-xl bg-paper-accent text-white text-xs font-sans font-semibold hover:opacity-95 cursor-pointer shadow-xs active:scale-95 transition-all whitespace-nowrap"
-              >
-                পিন সেভ করুন
-              </button>
-            </div>
-            <p id="pin-change-status" class="hidden text-xs text-emerald-600 dark:text-emerald-400 font-sans font-semibold bg-emerald-500/10 p-2 rounded-lg border border-emerald-500/20">
-              ✓ পিন কোড সফলভাবে পরিবর্তন হয়েছে!
-            </p>
-          </div>
-
-          <div class="pt-2">
-            <button
-              id="settings-lock-now-btn"
-              type="button"
-              class="w-full py-3 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30 text-xs font-sans font-semibold transition-all cursor-pointer flex items-center justify-center gap-2"
-            >
-              <span>🔒</span>
-              <span>স্টুডিও এখনই লক করুন</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
+    
   </div>
 
   <!-- Raw Data Injection for Ultra-Fast Client Hydration -->
@@ -1190,44 +1130,7 @@ const ssrTotalCommentsBn = toBnDigits(ssrComments.length);
         if (window.showAdminToast) window.showAdminToast('স্টুডিও সর্বদাই সরাসরি উন্মুক্ত। 🔓');
       }
 
-      saveNewPinBtn?.addEventListener('click', async () => {
-        const rawVal = newPinInput?.value || '';
-        const val = cleanPinString(rawVal);
-        if (!val || val.length < 4) {
-          alert('অনুগ্রহ করে কমপক্ষে ৪ সংখ্যার নতুন পিন কোড লিখুন।');
-          return;
-        }
 
-        saveNewPinBtn.disabled = true;
-        const origText = saveNewPinBtn.innerText;
-        saveNewPinBtn.innerText = 'সেভ হচ্ছে...';
-
-        try {
-          const res = await fetch('/api/admin-pin', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'change', newPin: val })
-          });
-          const json = await res.json();
-          if (res.ok && json.success) {
-            localStorage.setItem('kherokhata_admin_pin', val);
-            const statusEl = document.getElementById('pin-change-status');
-            if (statusEl) {
-              statusEl.textContent = '✓ নতুন পিন কোড ক্লাউড ডেটাবেসে সফলভাবে সংরক্ষিত হয়েছে! সকল ডিভাইসে এই পিন দিয়ে লগইন করতে হবে।';
-              statusEl.classList.remove('hidden');
-            }
-            if (newPinInput) newPinInput.value = '';
-            if (window.showAdminToast) window.showAdminToast('নতুন পিন কোড ক্লাউডে সংরক্ষিত হয়েছে! ✓');
-          } else {
-            alert(json.message || 'পিন সংরক্ষণ ব্যর্থ হয়েছে।');
-          }
-        } catch (e) {
-          alert('নেটওয়ার্ক সমস্যা: ' + e.message);
-        } finally {
-          saveNewPinBtn.disabled = false;
-          saveNewPinBtn.innerText = origText;
-        }
-      });
 
       checkAuth();
 
