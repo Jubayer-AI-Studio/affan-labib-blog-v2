@@ -19,7 +19,7 @@ export default {
         'night-muted': '#9CA3AF'
       },
       fontFamily: {
-        serif: ['Amiri', 'Kalpurush', 'SolaimanLipi', 'Georgia', 'serif'],
+        serif: ['"Noto Serif Bengali"', 'Kalpurush', 'SolaimanLipi', 'Amiri', 'Georgia', 'serif'],
         sans: ['"Hind Siliguri"', 'system-ui', '-apple-system', 'sans-serif'],
         mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace']
       },
